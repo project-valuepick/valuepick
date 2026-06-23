@@ -1,4 +1,5 @@
 package com.example.demo.domain.entity;
 
-public class entity {
+public enum UserRole {
+    USER, ADMIN
 }
