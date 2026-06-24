@@ -7,6 +7,7 @@ import com.example.demo.domain.entity.MarketIndex;
 import com.example.demo.domain.repository.ExchangeRepository;
 import com.example.demo.domain.repository.MarketIndexRepository;
 import com.example.demo.domain.repository.StockIndicatorRepository;
+import com.example.demo.domain.repository.Top100Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,9 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
 
     @Autowired
     ExchangeRepository exchangeRepository;
+
+    @Autowired
+    Top100Repository top100Repository;
 
     @Override
     public List<Map<String,Object>> getPER() throws Exception {
@@ -92,12 +96,33 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
 
     @Override
     public List<Map<String, Object>> getTOP10() throws Exception {
-        return List.of();
-    }
+        List<Map<String, Object>> list = new ArrayList<>();
+        List<Object> objects = top100Repository.findTop10OrderByScoreDesc();
+        for (Object o : objects) {
+            Object[] row = (Object[]) o;
+            Map<String, Object> m = new HashMap<>();
+            m.put("stock_code", row[0]);
+            m.put("score", row[1]);
+            m.put("corp_name", row[2]);
+            list.add(m);
+        }
 
+        return list;
+    }
     @Override
     public List<Map<String, Object>> getTOP100() throws Exception {
-        return List.of();
+        List<Map<String, Object>> list = new ArrayList<>();
+        List<Object> objects = top100Repository.findTop100OrderByScoreDesc();
+        for (Object o : objects) {
+            Object[] row = (Object[]) o;
+            Map<String, Object> m = new HashMap<>();
+            m.put("stock_code", row[0]);
+            m.put("score", row[1]);
+            m.put("corp_name", row[2]);
+            list.add(m);
+        }
+
+        return list;
     }
 
     @Override

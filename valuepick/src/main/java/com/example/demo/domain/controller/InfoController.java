@@ -53,4 +53,16 @@ public class InfoController {
     public ResponseEntity<ExchangeDto> getExchange() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getExchange());
     }
+
+    // TOP10
+    @GetMapping(value = "/top10",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getTOP10() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getTOP10());
+    }
+
+    // TOP100 전체
+    @GetMapping(value = "/top100",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getTOP100() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getTOP100());
+    }
 }
