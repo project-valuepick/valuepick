@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -65,4 +66,33 @@ public class InfoController {
     public ResponseEntity<List<Map<String, Object>>> getTOP100() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getTOP100());
     }
+
+    // 전체 목록 (company + indicator + 최신 주가)
+    @GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getList() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getList());
+    }
+
+    // 필터 목록 (per, roe, pbr, dividendYield 최소/최대)
+    @GetMapping(value = "/list/filter",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> getListWithFilter(
+            @RequestParam(required = false) Double perMin,
+            @RequestParam(required = false) Double perMax,
+            @RequestParam(required = false) Double roeMin,
+            @RequestParam(required = false) Double roeMax,
+            @RequestParam(required = false) Double pbrMin,
+            @RequestParam(required = false) Double pbrMax,
+            @RequestParam(required = false) Double dyMin,
+            @RequestParam(required = false) Double dyMax) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getListWithFilter(
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax));
+    }
+
+    // 기업명 검색
+    @GetMapping(value = "/search",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> search(
+            @RequestParam String keyword) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword));
+    }
+
 }
