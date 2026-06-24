@@ -95,34 +95,51 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     }
 
     @Override
-    public List<Map<String, Object>> getTOP10() throws Exception {
+    public Map<String, Object> getTOP10() throws Exception {
         List<Map<String, Object>> list = new ArrayList<>();
         List<Object> objects = top100Repository.findTop10OrderByScoreDesc();
         for (Object o : objects) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
-            m.put("stock_code", row[0]);
-            m.put("score", row[1]);
-            m.put("corp_name", row[2]);
+            m.put("stock_code",     row[0]);
+            m.put("corp_name",      row[1]);
+            m.put("per",            row[2]);
+            m.put("roe",            row[3]);
+            m.put("pbr",            row[4]);
+            m.put("dividend_yield", row[5]);
+            m.put("mkp",            row[6]);
+            m.put("flt_rt",         row[7]);
+            m.put("mrkt_tot_amt",   row[8]);
+            m.put("score",          row[9]);
             list.add(m);
         }
-
-        return list;
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        return result;
     }
+
     @Override
-    public List<Map<String, Object>> getTOP100() throws Exception {
+    public Map<String, Object> getTOP100() throws Exception {
         List<Map<String, Object>> list = new ArrayList<>();
         List<Object> objects = top100Repository.findTop100OrderByScoreDesc();
         for (Object o : objects) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
-            m.put("stock_code", row[0]);
-            m.put("score", row[1]);
-            m.put("corp_name", row[2]);
+            m.put("stock_code",     row[0]);
+            m.put("corp_name",      row[1]);
+            m.put("per",            row[2]);
+            m.put("roe",            row[3]);
+            m.put("pbr",            row[4]);
+            m.put("dividend_yield", row[5]);
+            m.put("mkp",            row[6]);
+            m.put("flt_rt",         row[7]);
+            m.put("mrkt_tot_amt",   row[8]);
+            m.put("score",          row[9]);
             list.add(m);
         }
-
-        return list;
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        return result;
     }
 
     @Override
@@ -156,6 +173,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
+            m.put("mrkt_tot_amt",            row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
@@ -183,6 +201,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
+            m.put("mrkt_tot_amt",            row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
@@ -205,6 +224,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
+            m.put("mrkt_tot_amt",            row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();

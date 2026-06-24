@@ -16,9 +16,9 @@ public interface SimpleInfoService {
     //배당수익률
     List<Map<String,Object>> getDividendYield() throws Exception;
     //rank top100 중 10개만
-    List<Map<String,Object>> getTOP10() throws Exception;
+    Map<String,Object> getTOP10() throws Exception;
     //rank top 100 전체 조회
-    List<Map<String,Object>> getTOP100() throws Exception;
+    Map<String,Object> getTOP100() throws Exception;
     //list
     Map<String,Object> getList() throws Exception;
     //list with filter (per, roe, pbr, dividendYield 최소/최대)

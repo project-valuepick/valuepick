@@ -1,0 +1,125 @@
+/* home.css — 홈 페이지 */
+
+.hero {
+  background: linear-gradient(135deg, #3182f6 0%, #1b64da 100%);
+  border-radius: var(--radius);
+  padding: 40px 36px;
+  color: #fff;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hero h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.hero p {
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+/* 시장 지표 */
+.market-section {
+  margin-bottom: 36px;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.market-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.market-name {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.market-value {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.market-change {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 주요 종목 */
+.stocks-section {
+  margin-bottom: 36px;
+}
+
+.stocks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* 랭킹 */
+.ranking-section {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+.ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.ranking-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.ranking-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 1024px) {
+  .market-grid { grid-template-columns: repeat(2, 1fr); }
+  .ranking-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 28px 24px; }
+  .hero h1 { font-size: 22px; }
+  .stocks-grid { grid-template-columns: 1fr; }
+  .ranking-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .market-grid { grid-template-columns: 1fr; }
+}

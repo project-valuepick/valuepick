@@ -12,7 +12,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
     @Query(value = """
             SELECT c.stock_code, c.corp_name,
                    i.per, i.roe, i.pbr, i.dividend_yield,
-                   sp.mkp, sp.flt_rt
+                   sp.mkp, sp.flt_rt, sp.mrkt_tot_amt
             FROM COMPANY c
             LEFT JOIN STOCK_INDICATOR i ON c.stock_code = i.stock_code
             LEFT JOIN STOCK_PRICE sp ON c.stock_code = sp.srtn_cd
@@ -28,7 +28,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
     @Query(value = """
             SELECT c.stock_code, c.corp_name,
                    i.per, i.roe, i.pbr, i.dividend_yield,
-                   sp.mkp, sp.flt_rt
+                   sp.mkp, sp.flt_rt, sp.mrkt_tot_amt
             FROM COMPANY c
             LEFT JOIN STOCK_INDICATOR i ON c.stock_code = i.stock_code
             LEFT JOIN STOCK_PRICE sp ON c.stock_code = sp.srtn_cd
@@ -43,7 +43,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
     @Query(value = """
             SELECT c.stock_code, c.corp_name,
                    i.per, i.roe, i.pbr, i.dividend_yield,
-                   sp.mkp, sp.flt_rt
+                   sp.mkp, sp.flt_rt, sp.mrkt_tot_amt
             FROM COMPANY c
             LEFT JOIN STOCK_INDICATOR i ON c.stock_code = i.stock_code
             LEFT JOIN STOCK_PRICE sp ON c.stock_code = sp.srtn_cd
