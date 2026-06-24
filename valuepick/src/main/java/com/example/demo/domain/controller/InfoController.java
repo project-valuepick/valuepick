@@ -23,14 +23,20 @@ public class InfoController {
         return ResponseEntity.ok(simpleInfoService.getPER());
     }
     // 저PBR 상위 5
-    @GetMapping("/pbr")
+    @GetMapping(value = "/pbr",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Map<String, Object>>> getPBR() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getPBR());
     }
 
     // 고ROE 상위 5
-    @GetMapping("/roe")
+    @GetMapping(value = "/roe",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Map<String, Object>>> getROE() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getROE());
+    }
+
+    // 고배당수익률 상위 5
+    @GetMapping(value = "/dividend-yield",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getDividendYield() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getDividendYield());
     }
 }

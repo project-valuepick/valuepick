@@ -66,7 +66,18 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
 
     @Override
     public List<Map<String, Object>> getDividendYield() throws Exception {
-        return List.of();
+        List<Map<String,Object>> list = new ArrayList<>();
+        List<Object> objects = indicatorRepository.higherDY5();
+        for(Object o : objects){
+            Object[] row = (Object[]) o;
+            Map<String,Object> m = new HashMap<>();
+            m.put("stock_code",row[0]);
+            m.put("dividend_yield",row[1]);
+            m.put("corp_name",row[2]);
+            list.add(m);
+        }
+
+        return list;
     }
 
     @Override

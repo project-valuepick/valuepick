@@ -39,4 +39,14 @@ public interface StockIndicatorRepository extends JpaRepository<StockIndicator, 
             """,
             nativeQuery = true)
     List<Object> higherRoe5();
+
+    @Query(value = """
+            SELECT i.stock_code, i.dividend_yield, c.corp_name
+            FROM STOCK_INDICATOR i
+            JOIN COMPANY c ON i.stock_code = c.stock_code
+            ORDER BY i.dividend_yield DESC 
+            LIMIT 5
+            """,
+            nativeQuery = true)
+    List<Object> higherDY5();
 }
