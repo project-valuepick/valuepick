@@ -19,4 +19,13 @@ public interface StockIndicatorRepository extends JpaRepository<StockIndicator, 
             """,
             nativeQuery = true)
     List<Object> lowerPer5();
+    @Query(value = """
+            SELECT i.stock_code, i.pbr, c.corp_name
+            FROM STOCK_INDICATOR i
+            JOIN COMPANY c ON i.stock_code = c.stock_code
+            ORDER BY i.pbr ASC
+            LIMIT 5
+            """,
+            nativeQuery = true)
+    List<Object> lowerPbr5();
 }

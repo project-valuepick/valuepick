@@ -39,7 +39,18 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
 
     @Override
     public List<Map<String, Object>> getPBR() throws Exception {
-        return List.of();
+        List<Map<String,Object>> list = new ArrayList<>();
+        List<Object> objects = indicatorRepository.lowerPbr5();
+        for(Object o : objects){
+            Object[] row = (Object[]) o;
+            Map<String,Object> m = new HashMap<>();
+            m.put("stock_code",row[0]);
+            m.put("pbr",row[1]);
+            m.put("corp_name",row[2]);
+            list.add(m);
+        }
+
+        return list;
     }
 
     @Override

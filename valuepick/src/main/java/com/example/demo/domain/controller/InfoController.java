@@ -22,4 +22,9 @@ public class InfoController {
     public ResponseEntity<List<Map<String, Object>>> getPER() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getPER());
     }
+    // 저PBR 상위 5
+    @GetMapping("/pbr")
+    public ResponseEntity<List<Map<String, Object>>> getPBR() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getPBR());
+    }
 }
