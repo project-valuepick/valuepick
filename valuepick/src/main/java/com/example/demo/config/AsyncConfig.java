@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -50,6 +51,9 @@ public class AsyncConfig {
     }
 
     @Bean
-    public ObjectMapper objectMapper() { return new ObjectMapper(); }
-
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // LocalDate 처리 모듈 등록
+        return objectMapper;
+    }
 }

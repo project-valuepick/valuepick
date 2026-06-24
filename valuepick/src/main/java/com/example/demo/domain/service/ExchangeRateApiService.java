@@ -15,10 +15,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,11 +29,6 @@ public class ExchangeRateApiService {
 
     @Value("${koreaexim.api.key}")
     private String koreaeximApiKey;
-
-    // 한국수출입은행 환율 API cur_unit 코드
-//    private static final String JAPAN_CUR_UNIT = "JPY(100)";
-//    private static final String USA_CUR_UNIT = "USD";
-//    private static final String CHINA_CUR_UNIT = "CNH";
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final int MAX_PREVIOUS_DAY_LOOKUP = 10; // 연휴가 길어도 이전 영업일을 찾을 수 있도록 최대 10일 탐색
@@ -149,15 +142,6 @@ public class ExchangeRateApiService {
         Object firstResult = response.get(0).get("result");
         if (firstResult != null && !"1".equals(String.valueOf(firstResult))) {
             throw new IllegalStateException("환율 API 호출 실패 (result 코드: " + firstResult + ")");
-        }
-
-        // cur_unit 기준으로 빠르게 조회하기 위한 맵 구성
-        Map<String, Map<String, Object>> itemsByCurUnit = new LinkedHashMap<>();
-        for (Map<String, Object> item : response) {
-            Object curUnit = item.get("cur_unit");
-            if (curUnit != null) {
-                itemsByCurUnit.put(String.valueOf(curUnit), item);
-            }
         }
 
         // 필요한 통화만 추출해서 Exchange 엔티티 생성
