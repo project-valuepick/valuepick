@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ValuePick — 가치투자 발굴 서비스</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="main">
+  <section class="hero" aria-label="서비스 소개">
+    <div class="hero-icon" aria-hidden="true">
+      <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+      </svg>
+    </div>
+    <div>
+      <h1>가치투자 발굴 서비스</h1>
+      <p>재무제표 기반으로 진짜 가치있는 종목을 찾아보세요</p>
+    </div>
+  </section>
+
+  <section class="market-section" aria-label="시장 지표">
+    <h2 class="section-title">시장 지표</h2>
+    <div class="market-grid" id="marketGrid"></div>
+  </section>
+
+  <section class="stocks-section" aria-label="주요 종목">
+    <h2 class="section-title">주요 종목</h2>
+    <div class="stocks-grid" id="stocksGrid"></div>
+  </section>
+
+  <section class="ranking-section" id="ranking" aria-label="랭킹">
+    <h2 class="section-title">가치투자 랭킹</h2>
+    <div class="ranking-grid">
+      <div id="rankPer"></div>
+      <div id="rankPbr"></div>
+      <div id="rankRoe"></div>
+      <div id="rankDiv"></div>
+    </div>
+  </section>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>
