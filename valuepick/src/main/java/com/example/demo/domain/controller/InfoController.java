@@ -27,4 +27,10 @@ public class InfoController {
     public ResponseEntity<List<Map<String, Object>>> getPBR() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getPBR());
     }
+
+    // 고ROE 상위 5
+    @GetMapping("/roe")
+    public ResponseEntity<List<Map<String, Object>>> getROE() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getROE());
+    }
 }

@@ -9,10 +9,10 @@ import java.util.Map;
 public interface SimpleInfoService {
     //저PER
     List<Map<String,Object>> getPER() throws Exception;
-    //고ROE
-    List<Map<String,Object>> getROE() throws Exception;
     //저PBR
     List<Map<String,Object>> getPBR() throws Exception;
+    //고ROE
+    List<Map<String,Object>> getROE() throws Exception;
     //배당수익률
     List<Map<String,Object>> getDividendYield() throws Exception;
     //rank top100 중 10개만
