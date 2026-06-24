@@ -1,5 +1,7 @@
 package com.example.demo.domain.controller;
 
+import com.example.demo.domain.dto.ExchangeDto;
+import com.example.demo.domain.dto.MarketIndexDto;
 import com.example.demo.domain.service.SimpleInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -38,5 +40,17 @@ public class InfoController {
     @GetMapping(value = "/dividend-yield",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Map<String, Object>>> getDividendYield() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getDividendYield());
+    }
+
+    // 코스피
+    @GetMapping(value = "/kospi",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MarketIndexDto> getKOSPI() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getKOSPI());
+    }
+
+    // 환율
+    @GetMapping(value = "/exchange",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ExchangeDto> getExchange() throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getExchange());
     }
 }

@@ -2,6 +2,10 @@ package com.example.demo.domain.service;
 
 import com.example.demo.domain.dto.ExchangeDto;
 import com.example.demo.domain.dto.MarketIndexDto;
+import com.example.demo.domain.entity.Exchange;
+import com.example.demo.domain.entity.MarketIndex;
+import com.example.demo.domain.repository.ExchangeRepository;
+import com.example.demo.domain.repository.MarketIndexRepository;
 import com.example.demo.domain.repository.StockIndicatorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,12 @@ import java.util.Map;
 public class SimpleInfoServiceImpl implements SimpleInfoService {
     @Autowired
     StockIndicatorRepository indicatorRepository;
+
+    @Autowired
+    MarketIndexRepository marketIndexRepository;
+
+    @Autowired
+    ExchangeRepository exchangeRepository;
 
     @Override
     public List<Map<String,Object>> getPER() throws Exception {
@@ -107,11 +117,17 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
 
     @Override
     public MarketIndexDto getKOSPI() throws Exception {
-        return null;
+        MarketIndex kospi = marketIndexRepository
+                .findTop1ByIdxNmOrderByBasDdDesc("KOSPI")
+                .orElseThrow(() -> new Exception("KOSPI 데이터가 없습니다."));
+        return MarketIndexDto.from(kospi);
     }
 
     @Override
     public ExchangeDto getExchange() throws Exception {
-        return null;
+        Exchange exchange = exchangeRepository
+                .findById("USD")
+                .orElseThrow(() -> new Exception("환율 데이터가 없습니다."));
+        return ExchangeDto.from(exchange);
     }
 }
