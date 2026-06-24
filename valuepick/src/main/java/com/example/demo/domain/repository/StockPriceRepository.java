@@ -1,0 +1,25 @@
+package com.example.demo.domain.repository;
+
+import com.example.demo.domain.entity.StockPrice;
+import com.example.demo.domain.entity.StockPriceId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+// PK가 복합키(StockPriceId)로 변경됨 - 기존 Long 단일 PK에서 (srtnCd + basDt) 복합키로 변경
+@Repository
+public interface StockPriceRepository extends JpaRepository<StockPrice, StockPriceId> {
+
+    // 종목코드 + 날짜로 중복 체크 - 동일 데이터 재저장 방지용
+    // 기존 findByStockCodeAndTradeDate → 새 필드명 srtnCd, basDt로 변경
+    Optional<StockPrice> findBySrtnCdAndBasDt(String srtnCd, LocalDate basDt);
+
+    // 특정 종목의 가장 최신 주가 조회 - 지표 계산 시 현재 주가로 사용
+    // 기존 findTopByStockCodeOrderByTradeDateDesc → srtnCd, basDt로 변경
+    Optional<StockPrice> findTopBySrtnCdOrderByBasDtDesc(String srtnCd);
+}
