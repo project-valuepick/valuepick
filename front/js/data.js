@@ -32,11 +32,6 @@ function sortStocks(stocks, key, dir) {
   });
 }
 
-function getRanking(stocks, key, limit = 8) {
-  const valid = stocks.filter((s) => s[key] != null && s[key] > 0);
-  const asc = key === 'per' || key === 'pbr';
-  return sortStocks(valid, key, asc ? 'asc' : 'desc').slice(0, limit);
-}
 
 // ──────────────────────────────────────────────
 // API Layer
@@ -61,7 +56,7 @@ function normalizeStock(s) {
 }
 
 // 랭킹 전용 정규화 (/info/per, /info/pbr, /info/roe, /info/dividend-yield)
-function normalizeRankStock(s, indicatorKey) {
+function normalizeRankStock(s) {
   return {
     code:          s.stock_code || '',
     name:          s.corp_name  || '',
@@ -134,23 +129,21 @@ async function fetchFeaturedStocks() {
 }
 
 /**
- * TOP10 랭킹 타입별 조회
+ * TOP 랭킹 타입별 조회
  * @param {"value"|"lowPer"|"highRoe"|"lowPbr"|"value"} type
  */
-async function fetchTop10(type = "value") {
+async function fetchTop(type = "value") {
   const urlMap = {
     lowPer:      '/info/per',
     lowPbr:      '/info/pbr',
     highRoe:     '/info/roe',
     dividendYield: '/info/dividend-yield',
-    value:       '/info/top10',
   };
-  const url = `${API_BASE}${urlMap[type] || '/info/top10'}`;
+  const url = `${API_BASE}${urlMap[type]}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`fetchTop10(${type}) failed: ${res.status}`);
+  if (!res.ok) throw new Error(`fetchTop(${type}) failed: ${res.status}`);
   const data = await res.json();
-  const arr = type === 'value' ? (data.list || []) : data;
-  return arr.map((s) => normalizeRankStock(s, type));
+  return data.map((s) => normalizeRankStock(s));
 }
 
 /**

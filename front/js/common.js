@@ -103,34 +103,6 @@ function bindStockCards(container) {
   });
 }
 
-function renderRankingList(stocks, key, label) {
-  const ranked = getRanking(stocks, key);
-  const items = ranked
-    .map((s, i) => {
-      const cls = changeClass(s.changeRate);
-      const value = key === 'roe' || key === 'dividendYield'
-        ? fmt2(s[key], '%')
-        : fmt2(s[key]);
-      return `
-        <div class="rank-item" data-code="${s.code}" role="button" tabindex="0">
-          <div class="rank-left">
-            <span class="rank-num${i < 3 ? ' top3' : ''}">${i + 1}</span>
-            <div>
-              <div class="rank-name">${s.name}</div>
-              <div class="rank-code">${s.code}</div>
-            </div>
-          </div>
-          <div class="rank-right">
-            <div class="rank-value">${value}</div>
-            <div class="stock-change ${cls}">${formatChange(s.changeRate)}</div>
-          </div>
-        </div>
-      `;
-    })
-    .join('');
-  return items;
-}
-
 function drawLineChart(canvas, datasets, labels) {
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
