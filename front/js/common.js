@@ -65,14 +65,20 @@ function goToDetail(code) {
   window.location.href = `detail.html?code=${code}`;
 }
 
-function renderStockCard(stock) {
+function renderStockCard(stock, rank) {
   const cls = changeClass(stock.changeRate);
+  const rankBadge = rank != null
+    ? `<span class="rank-num${rank <= 3 ? ' top3' : ''}" style="margin-right:10px;flex-shrink:0">${rank}</span>`
+    : '';
   return `
     <article class="stock-card" data-code="${stock.code}" role="button" tabindex="0" aria-label="${stock.name} 상세 보기">
       <div class="stock-card-header">
-        <div>
-          <h3 class="stock-name">${stock.name}</h3>
-          <p class="stock-code">${stock.code}</p>
+        <div style="display:flex;align-items:center">
+          ${rankBadge}
+          <div>
+            <h3 class="stock-name">${stock.name}</h3>
+            <p class="stock-code">${stock.code}</p>
+          </div>
         </div>
         <div class="stock-price-wrap">
           <div class="stock-price">${formatPrice(stock.price)}</div>

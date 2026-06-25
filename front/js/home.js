@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     stocksGrid.innerHTML = '<div>로딩 중...</div>';
     const stocks = await fetchFeaturedStocks();
-    stocksGrid.innerHTML = stocks.map(renderStockCard).join('');
+    stocksGrid.innerHTML = stocks.map((s, i) => renderStockCard(s, i + 1)).join('');
     bindStockCards(stocksGrid);
   } catch (err) {
     console.error('fetchFeaturedStocks 실패:', err);
