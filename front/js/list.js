@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let sortDir = 'desc';
   let filters = {};
   let currentPage = 0;
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 10;
   let _totalPages = 1;
   let _totalCount = 0;
 
@@ -113,17 +113,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindStockCards(cardList);
   }
 
-  function renderPagination(totalPages, currentPage) {
+  function renderPagination(totalPages, activePage) {
     const el = document.getElementById('pagination');
     if (!el) return;
     if (totalPages <= 1) { el.innerHTML = ''; return; }
 
     let html = '';
-    if (currentPage > 0) html += `<button class="page-btn" data-page="${currentPage-1}">이전</button>`;
+    if (activePage > 0) html += `<button class="page-btn" data-page="${activePage-1}">이전</button>`;
     for (let i = 0; i < totalPages; i++) {
-      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i+1}</button>`;
+      html += `<button class="page-btn ${i === activePage ? 'active' : ''}" data-page="${i}">${i+1}</button>`;
     }
-    if (currentPage < totalPages - 1) html += `<button class="page-btn" data-page="${currentPage+1}">다음</button>`;
+    if (activePage < totalPages - 1) html += `<button class="page-btn" data-page="${activePage+1}">다음</button>`;
 
     el.innerHTML = html;
     el.querySelectorAll('.page-btn[data-page]').forEach(btn => {

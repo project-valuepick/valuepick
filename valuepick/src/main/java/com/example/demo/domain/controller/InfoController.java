@@ -69,8 +69,10 @@ public class InfoController {
 
     // 전체 목록 (company + indicator + 최신 주가)
     @GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getList() throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getList());
+    public ResponseEntity<Map<String, Object>> getList(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getList(page, size));
     }
 
     // 필터 목록 (per, roe, pbr, dividendYield 최소/최대)

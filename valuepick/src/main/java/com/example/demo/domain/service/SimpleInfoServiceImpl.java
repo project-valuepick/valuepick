@@ -6,6 +6,8 @@ import com.example.demo.domain.entity.Exchange;
 import com.example.demo.domain.entity.MarketIndex;
 import com.example.demo.domain.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -159,10 +161,10 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     }
 
     @Override
-    public Map<String, Object> getList() throws Exception {
+    public Map<String, Object> getList(int page, int size) throws Exception {
+        Page<Object> pageResult = companyRepository.findAllWithIndicatorAndPrice(PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = companyRepository.findAllWithIndicatorAndPrice();
-        for (Object o : objects) {
+        for (Object o : pageResult.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -173,11 +175,14 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
-            m.put("mrkt_tot_amt",            row[8]);
+            m.put("mrkt_tot_amt",   row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",       list);
+        result.put("totalCount", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("page",       page);
         return result;
     }
 

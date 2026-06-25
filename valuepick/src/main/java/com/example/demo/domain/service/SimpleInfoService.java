@@ -19,8 +19,8 @@ public interface SimpleInfoService {
     Map<String,Object> getTOP10() throws Exception;
     //rank top 100 전체 조회
     Map<String,Object> getTOP100() throws Exception;
-    //list
-    Map<String,Object> getList() throws Exception;
+    //list (페이징)
+    Map<String,Object> getList(int page, int size) throws Exception;
     //list with filter (per, roe, pbr, dividendYield 최소/최대)
     Map<String,Object> getListWithFilter(Double perMin, Double perMax,
                                          Double roeMin, Double roeMax,

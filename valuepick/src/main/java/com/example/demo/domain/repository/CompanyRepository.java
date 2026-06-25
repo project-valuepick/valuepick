@@ -1,6 +1,8 @@
 package com.example.demo.domain.repository;
 
 import com.example.demo.domain.entity.Company;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,8 +39,20 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
                     FROM STOCK_PRICE sp2
                     WHERE sp2.srtn_cd = c.stock_code
                 )
-            """, nativeQuery = true)
-    List<Object> findAllWithIndicatorAndPrice();
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM COMPANY c
+            LEFT JOIN STOCK_INDICATOR i ON c.stock_code = i.stock_code
+            LEFT JOIN STOCK_PRICE sp ON c.stock_code = sp.srtn_cd
+                AND sp.bas_dt = (
+                    SELECT MAX(sp2.bas_dt)
+                    FROM STOCK_PRICE sp2
+                    WHERE sp2.srtn_cd = c.stock_code
+                )
+            """,
+            nativeQuery = true)
+    Page<Object> findAllWithIndicatorAndPrice(Pageable pageable);
 
     @Query(value = """
             SELECT c.stock_code, c.corp_name,

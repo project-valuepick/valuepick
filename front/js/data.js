@@ -151,7 +151,7 @@ async function fetchTop(type = "value") {
  * params: { keyword, page, size, perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax }
  */
 async function fetchStocks(params = {}) {
-  const { keyword, page = 0, size = 20,
+  const { keyword, page = 0, size = 10,
           perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax } = params;
 
   // 키워드 검색
@@ -182,11 +182,16 @@ async function fetchStocks(params = {}) {
     return paginate((body.list || []).map(normalizeStock), page, size);
   }
 
-  // 전체 목록
-  const res = await fetch(`${API_BASE}/info/list`);
+  // 전체 목록 (서버 페이징)
+  const res = await fetch(`${API_BASE}/info/list?page=${page}&size=${size}`);
   if (!res.ok) throw new Error(`fetchStocks(list) failed: ${res.status}`);
   const body = await res.json();
-  return paginate((body.list || []).map(normalizeStock), page, size);
+  return {
+    stocks:     (body.list || []).map(normalizeStock),
+    totalCount: body.totalCount ?? 0,
+    totalPages: body.totalPages ?? 1,
+    page:       body.page      ?? page,
+  };
 }
 
 /**
