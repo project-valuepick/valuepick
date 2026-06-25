@@ -35,7 +35,7 @@ public class PrincipalDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userDto.getId();
+        return userDto.getEmail();
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

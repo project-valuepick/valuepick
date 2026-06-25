@@ -21,18 +21,19 @@ public class PrincipalDetailsService implements UserDetailsService {
 
     // 로그인 시 Security 가 자동으로 호출 - username(이메일)으로 DB 조회 후 PrincipalDetails 반환
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("PrincipalDetailsService loadUserByUsername: {}", username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info("PrincipalDetailsService loadUserByUsername: {}", email);
 
-        Optional<User> userOptional = userRepository.findById(username);
+        Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isEmpty()) {
-            throw new UsernameNotFoundException(username + " 존재하지 않는 계정입니다.");
+            throw new UsernameNotFoundException(email + " 존재하지 않는 계정입니다.");
         }
 
         User user = userOptional.get();
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
+                .email(user.getEmail())
                 .password(user.getPassword())
                 .role(user.getRole())
                 .build();

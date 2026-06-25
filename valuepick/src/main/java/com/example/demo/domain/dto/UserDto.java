@@ -13,9 +13,11 @@ import java.time.LocalDateTime;
 @Builder
 public class UserDto {
 
+    private Long id;
+
     @NotBlank(message = "이메일은 필수 항목입니다.")
     @Email(message = "example@example.com 형식으로 입력하세요.")
-    private String id;
+    private String email;
 
     @NotBlank(message = "비밀번호는 필수 항목입니다.")
     private String password;
@@ -24,25 +26,19 @@ public class UserDto {
     private String nickname;
 
     private UserRole role;
+    private String provider;
+    private String providerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public User toEntity() {
-        return User.builder()
-                .id(this.id)
-                .password(this.password)
-                .nickname(this.nickname)
-                .role(this.role)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .build();
-    }
 
     public static UserDto from(User entity) {
         return UserDto.builder()
                 .id(entity.getId())
+                .email(entity.getEmail())
                 .nickname(entity.getNickname())
                 .role(entity.getRole())
+                .provider(entity.getProvider())
+                .providerId(entity.getProviderId())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
