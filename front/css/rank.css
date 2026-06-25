@@ -98,3 +98,14 @@
 .stock-table th.th-rank {
   cursor: default;
 }
+
+.scroll-sentinel {
+  height: 1px;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-sub);
+  font-size: 14px;
+}

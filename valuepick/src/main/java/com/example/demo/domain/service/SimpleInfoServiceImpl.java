@@ -8,6 +8,7 @@ import com.example.demo.domain.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -121,10 +122,10 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     }
 
     @Override
-    public Map<String, Object> getTOP100() throws Exception {
+    public Map<String, Object> getTOP100(int page, int size) throws Exception {
+        Slice<Object> slice = top100Repository.findTop100BySlice(PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = top100Repository.findTop100OrderByScoreDesc();
-        for (Object o : objects) {
+        for (Object o : slice.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -140,7 +141,9 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",    list);
+        result.put("hasNext", slice.hasNext());
+        result.put("page",    page);
         return result;
     }
 

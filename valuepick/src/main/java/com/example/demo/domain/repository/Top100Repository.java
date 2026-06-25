@@ -2,6 +2,8 @@ package com.example.demo.domain.repository;
 
 import com.example.demo.domain.entity.Top100;
 import com.example.demo.domain.entity.Top100Id;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -47,5 +49,5 @@ public interface Top100Repository extends JpaRepository<Top100, Top100Id> {
             ORDER BY t.score DESC
             """,
             nativeQuery = true)
-    List<Object> findTop100OrderByScoreDesc();
+    Slice<Object> findTop100BySlice(Pageable pageable);
 }

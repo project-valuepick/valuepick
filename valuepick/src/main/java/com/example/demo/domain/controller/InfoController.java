@@ -61,10 +61,12 @@ public class InfoController {
         return ResponseEntity.ok(simpleInfoService.getTOP10());
     }
 
-    // TOP100 전체
+    // TOP100 슬라이스 (무한스크롤)
     @GetMapping(value = "/top100",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getTOP100() throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getTOP100());
+    public ResponseEntity<Map<String, Object>> getTOP100(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getTOP100(page, size));
     }
 
     // 전체 목록 (company + indicator + 최신 주가)
