@@ -75,7 +75,7 @@ public class InfoController {
         return ResponseEntity.ok(simpleInfoService.getList(page, size));
     }
 
-    // 필터 목록 (per, roe, pbr, dividendYield 최소/최대)
+    // 필터 목록 (per, roe, pbr, dividendYield 최소/최대, 페이징)
     @GetMapping(value = "/list/filter",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getListWithFilter(
             @RequestParam(required = false) Double perMin,
@@ -85,9 +85,11 @@ public class InfoController {
             @RequestParam(required = false) Double pbrMin,
             @RequestParam(required = false) Double pbrMax,
             @RequestParam(required = false) Double dyMin,
-            @RequestParam(required = false) Double dyMax) throws Exception {
+            @RequestParam(required = false) Double dyMax,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
         return ResponseEntity.ok(simpleInfoService.getListWithFilter(
-                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax));
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax, page, size));
     }
 
     // 기업명 검색

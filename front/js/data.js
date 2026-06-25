@@ -176,10 +176,17 @@ async function fetchStocks(params = {}) {
     if (pbrMax != null) q.set('pbrMax', pbrMax);
     if (divMin != null) q.set('dyMin', divMin);
     if (divMax != null) q.set('dyMax', divMax);
+    q.set('page', page);
+    q.set('size', size);
     const res = await fetch(`${API_BASE}/info/list/filter?${q.toString()}`);
     if (!res.ok) throw new Error(`fetchStocks(filter) failed: ${res.status}`);
     const body = await res.json();
-    return paginate((body.list || []).map(normalizeStock), page, size);
+    return {
+      stocks:     (body.list || []).map(normalizeStock),
+      totalCount: body.totalCount ?? 0,
+      totalPages: body.totalPages ?? 1,
+      page:       body.page      ?? page,
+    };
   }
 
   // 전체 목록 (서버 페이징)

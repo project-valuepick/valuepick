@@ -191,11 +191,13 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     public Map<String, Object> getListWithFilter(Double perMin, Double perMax,
                                                  Double roeMin, Double roeMax,
                                                  Double pbrMin, Double pbrMax,
-                                                 Double dyMin,  Double dyMax) throws Exception {
+                                                 Double dyMin,  Double dyMax,
+                                                 int page, int size) throws Exception {
+        Page<Object> pageResult = companyRepository.findAllWithIndicatorAndPriceFiltered(
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax,
+                PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = companyRepository.findAllWithIndicatorAndPriceFiltered(
-                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax);
-        for (Object o : objects) {
+        for (Object o : pageResult.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -206,11 +208,14 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
-            m.put("mrkt_tot_amt",            row[8]);
+            m.put("mrkt_tot_amt",   row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",       list);
+        result.put("totalCount", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("page",       page);
         return result;
     }
 

@@ -21,11 +21,12 @@ public interface SimpleInfoService {
     Map<String,Object> getTOP100() throws Exception;
     //list (페이징)
     Map<String,Object> getList(int page, int size) throws Exception;
-    //list with filter (per, roe, pbr, dividendYield 최소/최대)
+    //list with filter (per, roe, pbr, dividendYield 최소/최대, 페이징)
     Map<String,Object> getListWithFilter(Double perMin, Double perMax,
                                          Double roeMin, Double roeMax,
                                          Double pbrMin, Double pbrMax,
-                                         Double dyMin,  Double dyMax) throws Exception;
+                                         Double dyMin,  Double dyMax,
+                                         int page, int size) throws Exception;
     //search
     Map<String,Object> getSerachResult(String keyword) throws Exception;
     //코스피

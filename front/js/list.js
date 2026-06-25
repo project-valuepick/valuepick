@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const apiParams = { page: currentPage, size: PAGE_SIZE };
       if (searchQuery) apiParams.keyword = searchQuery;
       if (market) apiParams.market = market;
+      if (filters.perMin != null) apiParams.perMin = filters.perMin;
+      if (filters.perMax != null) apiParams.perMax = filters.perMax;
+      if (filters.pbrMin != null) apiParams.pbrMin = filters.pbrMin;
+      if (filters.pbrMax != null) apiParams.pbrMax = filters.pbrMax;
+      if (filters.roeMin != null) apiParams.roeMin = filters.roeMin;
+      if (filters.roeMax != null) apiParams.roeMax = filters.roeMax;
+      if (filters.divMin != null) apiParams.divMin = filters.divMin;
+      if (filters.divMax != null) apiParams.divMax = filters.divMax;
       const { stocks: fetched, totalCount, totalPages } = await fetchStocks(apiParams);
       stocks = fetched;
       _totalCount = totalCount;
@@ -162,8 +170,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     filterPanel.classList.remove('open');
     filterBtn.classList.remove('open');
+    currentPage = 0;
 
-    // market 필터가 있으면 API 재호출
     await loadStocks({ market: marketFilter || undefined });
     render();
   });
@@ -179,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const marketEl = document.getElementById('marketFilter');
     if (marketEl) marketEl.value = '';
 
-    // 필터 초기화 시 API 재호출 (market 필터 없이)
+    currentPage = 0;
     await loadStocks();
     render();
   });
