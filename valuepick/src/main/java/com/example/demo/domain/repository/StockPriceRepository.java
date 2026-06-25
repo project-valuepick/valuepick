@@ -22,4 +22,7 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, StockPri
     // 특정 종목의 가장 최신 주가 조회 - 지표 계산 시 현재 주가로 사용
     // 기존 findTopByStockCodeOrderByTradeDateDesc → srtnCd, basDt로 변경
     Optional<StockPrice> findTopBySrtnCdOrderByBasDtDesc(String srtnCd);
+
+    // 7일 이전 데이터 삭제
+    void deleteByBasDtBefore(LocalDate date);
 }

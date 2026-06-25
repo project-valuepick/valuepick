@@ -16,4 +16,7 @@ public interface ExchangeRepository extends JpaRepository<Exchange, String> {
 
     // 통화코드 + 기준일자로 단건 조회 - 전 영업일 비교할 때 사용
     Optional<Exchange> findByCurUnitAndBaseDate(String curUnit, LocalDate baseDate);
+
+    // 데이터 삭제 매서드
+    void deleteByBaseDateBefore(LocalDate date);
 }
