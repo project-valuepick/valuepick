@@ -6,6 +6,9 @@ import com.example.demo.domain.entity.Exchange;
 import com.example.demo.domain.entity.MarketIndex;
 import com.example.demo.domain.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -119,10 +122,10 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     }
 
     @Override
-    public Map<String, Object> getTOP100() throws Exception {
+    public Map<String, Object> getTOP100(int page, int size) throws Exception {
+        Slice<Object> slice = top100Repository.findTop100BySlice(PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = top100Repository.findTop100OrderByScoreDesc();
-        for (Object o : objects) {
+        for (Object o : slice.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -138,7 +141,9 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",    list);
+        result.put("hasNext", slice.hasNext());
+        result.put("page",    page);
         return result;
     }
 
@@ -159,10 +164,10 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     }
 
     @Override
-    public Map<String, Object> getList() throws Exception {
+    public Map<String, Object> getList(int page, int size) throws Exception {
+        Page<Object> pageResult = companyRepository.findAllWithIndicatorAndPrice(PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = companyRepository.findAllWithIndicatorAndPrice();
-        for (Object o : objects) {
+        for (Object o : pageResult.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -173,11 +178,14 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
-            m.put("mrkt_tot_amt",            row[8]);
+            m.put("mrkt_tot_amt",   row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",       list);
+        result.put("totalCount", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("page",       page);
         return result;
     }
 
@@ -186,11 +194,13 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     public Map<String, Object> getListWithFilter(Double perMin, Double perMax,
                                                  Double roeMin, Double roeMax,
                                                  Double pbrMin, Double pbrMax,
-                                                 Double dyMin,  Double dyMax) throws Exception {
+                                                 Double dyMin,  Double dyMax,
+                                                 int page, int size) throws Exception {
+        Page<Object> pageResult = companyRepository.findAllWithIndicatorAndPriceFiltered(
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax,
+                PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = companyRepository.findAllWithIndicatorAndPriceFiltered(
-                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax);
-        for (Object o : objects) {
+        for (Object o : pageResult.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -201,19 +211,22 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
-            m.put("mrkt_tot_amt",            row[8]);
+            m.put("mrkt_tot_amt",   row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
+        result.put("list",       list);
+        result.put("totalCount", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("page",       page);
         return result;
     }
 
     @Override
-    public Map<String, Object> getSerachResult(String keyword) throws Exception {
+    public Map<String, Object> getSerachResult(String keyword, int page, int size) throws Exception {
+        Page<Object> pageResult = companyRepository.searchByCorpName(keyword, PageRequest.of(page, size));
         List<Map<String, Object>> list = new ArrayList<>();
-        List<Object> objects = companyRepository.searchByCorpName(keyword);
-        for (Object o : objects) {
+        for (Object o : pageResult.getContent()) {
             Object[] row = (Object[]) o;
             Map<String, Object> m = new HashMap<>();
             m.put("stock_code",     row[0]);
@@ -224,11 +237,14 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("dividend_yield", row[5]);
             m.put("mkp",            row[6]);
             m.put("flt_rt",         row[7]);
-            m.put("mrkt_tot_amt",            row[8]);
+            m.put("mrkt_tot_amt",   row[8]);
             list.add(m);
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("result", list);
+        result.put("result",     list);
+        result.put("totalCount", pageResult.getTotalElements());
+        result.put("totalPages", pageResult.getTotalPages());
+        result.put("page",       page);
         return result;
     }
 

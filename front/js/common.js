@@ -4,7 +4,7 @@ function renderHeader(activePage) {
   const navItems = [
     { href: 'index.html', label: '홈', key: 'home' },
     { href: 'list.html', label: '종목리스트', key: 'list' },
-    { href: 'index.html#ranking', label: '랭킹', key: 'ranking' },
+    { href: 'rank.html', label: '랭킹', key: 'ranking' },
     { href: '#', label: '관심종목', key: 'watchlist' },
   ];
 
@@ -65,14 +65,20 @@ function goToDetail(code) {
   window.location.href = `detail.html?code=${code}`;
 }
 
-function renderStockCard(stock) {
+function renderStockCard(stock, rank) {
   const cls = changeClass(stock.changeRate);
+  const rankBadge = rank != null
+    ? `<span class="rank-num${rank <= 3 ? ' top3' : ''}" style="margin-right:10px;flex-shrink:0">${rank}</span>`
+    : '';
   return `
     <article class="stock-card" data-code="${stock.code}" role="button" tabindex="0" aria-label="${stock.name} 상세 보기">
       <div class="stock-card-header">
-        <div>
-          <h3 class="stock-name">${stock.name}</h3>
-          <p class="stock-code">${stock.code}</p>
+        <div style="display:flex;align-items:center">
+          ${rankBadge}
+          <div>
+            <h3 class="stock-name">${stock.name}</h3>
+            <p class="stock-code">${stock.code}</p>
+          </div>
         </div>
         <div class="stock-price-wrap">
           <div class="stock-price">${formatPrice(stock.price)}</div>
@@ -101,34 +107,6 @@ function bindStockCards(container) {
       }
     });
   });
-}
-
-function renderRankingList(stocks, key, label) {
-  const ranked = getRanking(stocks, key);
-  const items = ranked
-    .map((s, i) => {
-      const cls = changeClass(s.changeRate);
-      const value = key === 'roe' || key === 'dividendYield'
-        ? fmt2(s[key], '%')
-        : fmt2(s[key]);
-      return `
-        <div class="rank-item" data-code="${s.code}" role="button" tabindex="0">
-          <div class="rank-left">
-            <span class="rank-num${i < 3 ? ' top3' : ''}">${i + 1}</span>
-            <div>
-              <div class="rank-name">${s.name}</div>
-              <div class="rank-code">${s.code}</div>
-            </div>
-          </div>
-          <div class="rank-right">
-            <div class="rank-value">${value}</div>
-            <div class="stock-change ${cls}">${formatChange(s.changeRate)}</div>
-          </div>
-        </div>
-      `;
-    })
-    .join('');
-  return items;
 }
 
 function drawLineChart(canvas, datasets, labels) {

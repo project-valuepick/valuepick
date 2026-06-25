@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     stocksGrid.innerHTML = '<div>로딩 중...</div>';
     const stocks = await fetchFeaturedStocks();
-    stocksGrid.innerHTML = stocks.map(renderStockCard).join('');
+    stocksGrid.innerHTML = stocks.map((s, i) => renderStockCard(s, i + 1)).join('');
     bindStockCards(stocksGrid);
   } catch (err) {
     console.error('fetchFeaturedStocks 실패:', err);
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'rankPer', key: 'per',           title: '📈 저PER 순위',     type: 'lowPer'  },
     { id: 'rankPbr', key: 'pbr',           title: '📊 저PBR 순위',     type: 'lowPbr'  },
     { id: 'rankRoe', key: 'roe',           title: '💰 고ROE 순위',     type: 'highRoe' },
-    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'value'   },
+    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'dividendYield' },
   ];
 
   // 랭킹 섹션 로딩 표시
@@ -57,11 +57,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   function buildRankingItems(stocks, key) {
-    return stocks.slice(0, 8).map((s, i) => {
-      const cls = changeClass(s.changeRate);
+    return stocks.slice(0, 5).map((s, i) => {
       const value = key === 'roe' || key === 'dividendYield'
-        ? s[key] + '%'
-        : s[key];
+        ? fmt2(s[key], '%')
+        : fmt2(s[key]);
       return `
         <div class="rank-item" data-code="${s.code}" role="button" tabindex="0">
           <div class="rank-left">
@@ -73,7 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="rank-right">
             <div class="rank-value">${value}</div>
-            <div class="stock-change ${cls}">${formatChange(s.changeRate)}</div>
           </div>
         </div>
       `;
@@ -82,10 +80,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   try {
     const [perStocks, pbrStocks, roeStocks, divStocks] = await Promise.all([
-      fetchTop10('lowPer'),
-      fetchTop10('lowPbr'),
-      fetchTop10('highRoe'),
-      fetchTop10('value'),
+      fetchTop('lowPer'),
+      fetchTop('lowPbr'),
+      fetchTop('highRoe'),
+      fetchTop('dividendYield'),
     ]);
 
     const apiResults = [perStocks, pbrStocks, roeStocks, divStocks];
@@ -102,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       bindStockCards(el);
     });
   } catch (err) {
-    console.error('fetchTop10 실패:', err);
+    console.error('fetchTop 실패:', err);
     rankings.forEach(({ id, title }) => {
       const el = document.getElementById(id);
       if (!el) return;

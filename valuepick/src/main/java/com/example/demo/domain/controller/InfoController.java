@@ -61,19 +61,23 @@ public class InfoController {
         return ResponseEntity.ok(simpleInfoService.getTOP10());
     }
 
-    // TOP100 전체
+    // TOP100 슬라이스 (무한스크롤)
     @GetMapping(value = "/top100",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getTOP100() throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getTOP100());
+    public ResponseEntity<Map<String, Object>> getTOP100(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getTOP100(page, size));
     }
 
     // 전체 목록 (company + indicator + 최신 주가)
     @GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getList() throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getList());
+    public ResponseEntity<Map<String, Object>> getList(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getList(page, size));
     }
 
-    // 필터 목록 (per, roe, pbr, dividendYield 최소/최대)
+    // 필터 목록 (per, roe, pbr, dividendYield 최소/최대, 페이징)
     @GetMapping(value = "/list/filter",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getListWithFilter(
             @RequestParam(required = false) Double perMin,
@@ -83,16 +87,20 @@ public class InfoController {
             @RequestParam(required = false) Double pbrMin,
             @RequestParam(required = false) Double pbrMax,
             @RequestParam(required = false) Double dyMin,
-            @RequestParam(required = false) Double dyMax) throws Exception {
+            @RequestParam(required = false) Double dyMax,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
         return ResponseEntity.ok(simpleInfoService.getListWithFilter(
-                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax));
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax, page, size));
     }
 
-    // 기업명 검색
+    // 기업명 검색 (페이징)
     @GetMapping(value = "/search",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> search(
-            @RequestParam String keyword) throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword));
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword, page, size));
     }
 
 }

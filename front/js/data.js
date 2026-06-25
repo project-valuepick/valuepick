@@ -32,11 +32,6 @@ function sortStocks(stocks, key, dir) {
   });
 }
 
-function getRanking(stocks, key, limit = 8) {
-  const valid = stocks.filter((s) => s[key] != null && s[key] > 0);
-  const asc = key === 'per' || key === 'pbr';
-  return sortStocks(valid, key, asc ? 'asc' : 'desc').slice(0, limit);
-}
 
 // ──────────────────────────────────────────────
 // API Layer
@@ -61,7 +56,7 @@ function normalizeStock(s) {
 }
 
 // 랭킹 전용 정규화 (/info/per, /info/pbr, /info/roe, /info/dividend-yield)
-function normalizeRankStock(s, indicatorKey) {
+function normalizeRankStock(s) {
   return {
     code:          s.stock_code || '',
     name:          s.corp_name  || '',
@@ -77,17 +72,6 @@ function normalizeRankStock(s, indicatorKey) {
   };
 }
 
-// 클라이언트 페이징
-function paginate(arr, page, size) {
-  const total      = arr.length;
-  const totalPages = Math.ceil(total / size) || 1;
-  return {
-    stocks:     arr.slice(page * size, page * size + size),
-    totalCount: total,
-    totalPages,
-    page,
-  };
-}
 
 /**
  * 시장 지표 (코스피 + 환율)
@@ -134,22 +118,21 @@ async function fetchFeaturedStocks() {
 }
 
 /**
- * TOP10 랭킹 타입별 조회
+ * TOP 랭킹 타입별 조회
  * @param {"value"|"lowPer"|"highRoe"|"lowPbr"|"value"} type
  */
-async function fetchTop10(type = "value") {
+async function fetchTop(type = "value") {
   const urlMap = {
-    lowPer:  '/info/per',
-    lowPbr:  '/info/pbr',
-    highRoe: '/info/roe',
-    value:   '/info/top10',
+    lowPer:      '/info/per',
+    lowPbr:      '/info/pbr',
+    highRoe:     '/info/roe',
+    dividendYield: '/info/dividend-yield',
   };
-  const url = `${API_BASE}${urlMap[type] || '/info/top10'}`;
+  const url = `${API_BASE}${urlMap[type]}`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`fetchTop10(${type}) failed: ${res.status}`);
+  if (!res.ok) throw new Error(`fetchTop(${type}) failed: ${res.status}`);
   const data = await res.json();
-  const arr = type === 'value' ? (data.list || []) : data;
-  return arr.map((s) => normalizeRankStock(s, type));
+  return data.map((s) => normalizeRankStock(s));
 }
 
 /**
@@ -157,15 +140,20 @@ async function fetchTop10(type = "value") {
  * params: { keyword, page, size, perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax }
  */
 async function fetchStocks(params = {}) {
-  const { keyword, page = 0, size = 20,
+  const { keyword, page = 0, size = 10,
           perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax } = params;
 
-  // 키워드 검색
+  // 키워드 검색 (서버 페이징)
   if (keyword) {
-    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}`);
+    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
     if (!res.ok) throw new Error(`fetchStocks(search) failed: ${res.status}`);
     const body = await res.json();
-    return paginate((body.result || []).map(normalizeStock), page, size);
+    return {
+      stocks:     (body.result || []).map(normalizeStock),
+      totalCount: body.totalCount ?? 0,
+      totalPages: body.totalPages ?? 1,
+      page:       body.page      ?? page,
+    };
   }
 
   // 필터 적용
@@ -182,17 +170,29 @@ async function fetchStocks(params = {}) {
     if (pbrMax != null) q.set('pbrMax', pbrMax);
     if (divMin != null) q.set('dyMin', divMin);
     if (divMax != null) q.set('dyMax', divMax);
+    q.set('page', page);
+    q.set('size', size);
     const res = await fetch(`${API_BASE}/info/list/filter?${q.toString()}`);
     if (!res.ok) throw new Error(`fetchStocks(filter) failed: ${res.status}`);
     const body = await res.json();
-    return paginate((body.list || []).map(normalizeStock), page, size);
+    return {
+      stocks:     (body.list || []).map(normalizeStock),
+      totalCount: body.totalCount ?? 0,
+      totalPages: body.totalPages ?? 1,
+      page:       body.page      ?? page,
+    };
   }
 
-  // 전체 목록
-  const res = await fetch(`${API_BASE}/info/list`);
+  // 전체 목록 (서버 페이징)
+  const res = await fetch(`${API_BASE}/info/list?page=${page}&size=${size}`);
   if (!res.ok) throw new Error(`fetchStocks(list) failed: ${res.status}`);
   const body = await res.json();
-  return paginate((body.list || []).map(normalizeStock), page, size);
+  return {
+    stocks:     (body.list || []).map(normalizeStock),
+    totalCount: body.totalCount ?? 0,
+    totalPages: body.totalPages ?? 1,
+    page:       body.page      ?? page,
+  };
 }
 
 /**
