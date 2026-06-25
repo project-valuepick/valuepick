@@ -2,7 +2,6 @@ package com.example.demo.domain.service;
 
 import com.example.demo.config.auth.jwt.JWTTokenProvider;
 import com.example.demo.config.auth.jwt.TokenInfo;
-import com.example.demo.domain.dto.UserDto;
 import com.example.demo.domain.entity.User;
 import com.example.demo.domain.entity.UserRole;
 import com.example.demo.domain.repository.UserRepository;
@@ -28,22 +27,22 @@ public class AuthService {
     private final JWTTokenProvider jwtTokenProvider;
 
     @Transactional
-    public void register(UserDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
+    public void register(String email, String password, String nickname) {
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         User user = User.builder()
-                .email(userDto.getEmail())
-                .password(passwordEncoder.encode(userDto.getPassword()))
-                .nickname(userDto.getNickname())
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .nickname(nickname)
                 .role(UserRole.USER)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);
-        log.info("회원가입 완료: {}", userDto.getEmail());
+        log.info("회원가입 완료: {}", email);
     }
 
     public TokenInfo login(String email, String password) {
