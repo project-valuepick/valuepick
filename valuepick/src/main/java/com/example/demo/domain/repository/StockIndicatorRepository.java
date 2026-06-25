@@ -2,11 +2,12 @@ package com.example.demo.domain.repository;
 
 import com.example.demo.domain.entity.StockIndicator;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
+// StockIndicator의 PK는 stock_code(String) - 기존 FinancialIndicator(Long PK)에서 변경됨
 @Repository
 public interface StockIndicatorRepository extends JpaRepository<StockIndicator, String> {
     //지표 테이블 들어오는 것 보고 다시 수정요망

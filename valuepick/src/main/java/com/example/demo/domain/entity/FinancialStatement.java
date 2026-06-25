@@ -16,17 +16,17 @@ public class FinancialStatement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bsns_year", columnDefinition = "CHAR(4)",unique = true)
+    @Column(name = "bsns_year", columnDefinition = "CHAR(4)") // ,unique = true // 복합 UK 충돌
     private String bsnsYear;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_code",unique = true)
+    @JoinColumn(name = "stock_code", columnDefinition = "CHAR(6)") // ,unique = true // 복합 UK 충돌
     private Company company;
 
-    @Column(name = "reprt_code",unique = true)
+    @Column(name = "reprt_code", columnDefinition = "CHAR(5)") // ,unique = true // 복합 UK 충돌
     private String reprtCode;
 
-    @Column(name = "fs_div",unique = true)
+    @Column(name = "fs_div", columnDefinition = "CHAR(3)") // ,unique = true // 복합 UK 충돌
     private String fsDiv;
 
     private Long revenue;

@@ -30,4 +30,10 @@ public class Company {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void updateCorpCls(String corpCls) {
+        this.corpCls = corpCls;
+    }
 }
+
+
