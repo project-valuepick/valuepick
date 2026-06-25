@@ -14,9 +14,6 @@ public interface ExchangeRepository extends JpaRepository<Exchange, String> {
     // 기준일자로 환율 목록 조회 - 특정 날짜의 전체 환율 데이터 가져올 때 사용
     List<Exchange> findByBaseDate(LocalDate baseDate);
 
-    // 통화코드 + 기준일자로 단건 조회 - 전 영업일 비교할 때 사용
-    Optional<Exchange> findByCurUnitAndBaseDate(String curUnit, LocalDate baseDate);
-
     // 데이터 삭제 매서드
     void deleteByBaseDateBefore(LocalDate date);
 }

@@ -32,7 +32,7 @@ public class FinancialIndicatorService {
     private final StockIndicatorRepository stockIndicatorRepository;         // FinancialIndicator → StockIndicator
     private final DividendInfoRepository dividendInfoRepository;             // DividendRepository → DividendInfoRepository
 
-    public void calculateAll(int year, String reprtCode) {
+    public void calculateAll(String year, String reprtCode) {
 
         int savedCount = 0;
         int page = 0;
@@ -54,7 +54,7 @@ public class FinancialIndicatorService {
                     // 해당 연도 재무제표 조회 - bsnsYear가 String이므로 String.valueOf()로 변환
                     Optional<FinancialStatement> financialOpt =
                             financialStatementRepository.findByStockCodeAndYearAndReprtCode(
-                                    company.getStockCode(), String.valueOf(year), reprtCode);
+                                    company.getStockCode(), year, reprtCode);
 
                     if (financialOpt.isEmpty()) {
                         log.warn("재무데이터 없음: {}", company.getCorpName());

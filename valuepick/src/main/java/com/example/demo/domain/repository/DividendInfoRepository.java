@@ -13,6 +13,4 @@ public interface DividendInfoRepository extends JpaRepository<DividendInfo, Stri
     // corpCode로 배당 정보 조회 - 지표 계산 시 배당수익률 가져올 때 사용
     Optional<DividendInfo> findByCorpCodeAndDividendKind(String corpCode, String dividendKind);
 
-    // corpCode + dividendKind로 중복 체크 - 동일 데이터 재저장 방지
-    boolean existsByCorpCodeAndDividendKind(String corpCode, String dividendKind);
 }

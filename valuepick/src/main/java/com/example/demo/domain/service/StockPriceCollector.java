@@ -57,7 +57,7 @@ public class StockPriceCollector {
             log.info("페이지 {}: {}건 처리 중", page, companies.size());
 
             // 병렬 스트림으로 종목별 주가 수집 (처리 속도 향상)
-            int pageCount = companies.stream()
+            int pageCount = companies.parallelStream()
                     .mapToInt(company -> {
                         try {
                             return collectByDateRange(company, startDate, endDate);

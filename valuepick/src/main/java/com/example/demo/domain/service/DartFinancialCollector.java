@@ -65,7 +65,7 @@ public class DartFinancialCollector {
 
                     // API 실패 또는 상태코드 비정상이면 스킵
                     if (response == null || !"000".equals(response.getStatus())) {
-                        log.warn("API 실패: {}", company.getCorpName());
+                        log.warn("API 실패: {} - status={}", company.getCorpName(), response != null ? response.getStatus() : "null");
                         continue;
                     }
 

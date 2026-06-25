@@ -34,7 +34,7 @@ public class FinancialScheduler {
         try {
             String year = String.valueOf(LocalDate.now().getYear() - 1);
             log.info("[FinancialScheduler] 사업보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(Integer.parseInt(year), "11011");
+            financialIndicatorService.calculateAll(year, "11011");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 사업보고서 지표계산 실패", e);
         }
@@ -56,7 +56,7 @@ public class FinancialScheduler {
         try {
             String year = String.valueOf(LocalDate.now().getYear());
             log.info("[FinancialScheduler] 1분기보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(Integer.parseInt(year), "11013");
+            financialIndicatorService.calculateAll(year, "11013");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 1분기보고서 지표계산 실패", e);
         }
@@ -78,7 +78,7 @@ public class FinancialScheduler {
         try {
             String year = String.valueOf(LocalDate.now().getYear());
             log.info("[FinancialScheduler] 반기보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(Integer.parseInt(year), "11012");
+            financialIndicatorService.calculateAll(year, "11012");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 반기보고서 지표계산 실패", e);
         }
@@ -100,7 +100,7 @@ public class FinancialScheduler {
         try {
             String year = String.valueOf(LocalDate.now().getYear());
             log.info("[FinancialScheduler] 3분기보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(Integer.parseInt(year), "11014");
+            financialIndicatorService.calculateAll(year, "11011");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 3분기보고서 지표계산 실패", e);
         }
