@@ -197,41 +197,67 @@ async function fetchStocks(params = {}) {
 
 /**
  * 종목 상세 — stock_code로 검색 후 반환 (detail.js 용)
- * ※ 재무제표 상세 API 미구현 — 지표 데이터만 표시
+ * ※ 재무제표 상세 API 구현
  */
 async function fetchStockFull(code) {
-  const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(code)}`);
-  if (!res.ok) throw new Error(`fetchStockFull failed: ${res.status}`);
-  const body = await res.json();
-  const found = (body.result || []).find((s) => s.stock_code === code);
-  if (!found) throw new Error('종목을 찾을 수 없습니다.');
+   const [stockRes, fsRes] = await Promise.all([
+    fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}`),
+    fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}/financial-statements`),
+  ]);
+  if (!stockRes.ok) throw new Error(`fetchStockFull failed: ${stockRes.status}`);
 
-  const s = normalizeStock(found);
-  const empty = YEARS.map(() => 0);
+  const { company, indicator, latestPrice, priceHistory = [] } = await stockRes.json();
+  const statements = fsRes.ok ? await fsRes.json() : [];
+
+  // 등락액: 최근 2개 종가 차이
+  const changeAmount = priceHistory.length >= 2
+    ? priceHistory[priceHistory.length - 1].clpr - priceHistory[priceHistory.length - 2].clpr
+    : 0;
+
+  // 연도별 재무제표 — 연도당 1건만 사용 (가장 먼저 나오는 보고서)
+  const byYear = new Map();
+  statements.forEach((s) => {
+    if (!byYear.has(s.bsnsYear)) byYear.set(s.bsnsYear, s);
+  });
+  const hasFinancials = byYear.size > 0;
+  const years = hasFinancials ? [...byYear.keys()].sort() : YEARS.map(String);
+  const toEok = (v) => (v == null ? 0 : v / 1e8); // 원 → 억원
 
   return {
-    ...s,
-    shares:           '-',
-    eps:              null,
-    bps:              null,
-    debtRatio:        null,
-    operatingMargin:  null,
-    sector:           '-',
-    listedDate:       '-',
-    ceo:              '-',
-    operatingProfit:  0,
-    years:            YEARS,
-    revenueHistory:   empty,
-    operatingHistory: empty,
-    netIncomeHistory: empty,
-    assetHistory:     empty,
-    debtHistory:      empty,
-    equityHistory:    empty,
-    roeHistory:       empty,
-    debtRatioHistory: empty,
-    perHistory:       empty,
-    pbrHistory:       empty,
-    epsHistory:       empty,
-    bpsHistory:       empty,
+  code:            company.stockCode,
+    name:            company.corpName,
+    price:           Number(latestPrice?.clpr) || 0,
+    changeRate:      Number(latestPrice?.fltRt) || 0,
+    changeAmount,
+    marketCap:       Number(latestPrice?.mrktTotAmt) || 0,
+    per:             indicator?.per ?? null,
+    pbr:             indicator?.pbr ?? null,
+    roe:             indicator?.roe ?? null,
+    dividendYield:   indicator?.dividendYield ?? null,
+    eps:             indicator?.eps ?? null,
+    bps:             indicator?.bps ?? null,
+    debtRatio:       indicator?.debtRatio ?? null,
+    shares:          latestPrice?.lstgStCnt != null ? Number(latestPrice.lstgStCnt).toLocaleString('ko-KR') + '주' : '-',
+    sector:          '-',
+    market:          company.corpCls === 'Y' ? '유가증권' : company.corpCls === 'K' ? '코스닥' : '-',
+    listedDate:      '-',
+    operatingProfit: hasFinancials ? toEok(byYear.get(years[years.length - 1]).operatingIncome) : 0,
+    years,
+    revenueHistory:     years.map((y) => toEok(byYear.get(y)?.revenue)),
+    operatingHistory:   years.map((y) => toEok(byYear.get(y)?.operatingIncome)),
+    netIncomeHistory:   years.map((y) => toEok(byYear.get(y)?.netIncome)),
+    assetHistory:       years.map((y) => toEok(byYear.get(y)?.totalAssets)),
+    debtHistory:        years.map((y) => toEok(byYear.get(y)?.totalLiabilities)),
+    equityHistory:      years.map((y) => toEok(byYear.get(y)?.totalEquity)),
+    debtRatioHistory:   years.map((y) => {
+      const s = byYear.get(y);
+      return s?.totalEquity ? (s.totalLiabilities / s.totalEquity) * 100 : 0;
+    }),
+    // 연도별 PER/PBR/ROE/EPS/BPS는 백엔드에 연도별 지표 데이터가 없어 현재는 0으로 표시
+    roeHistory:  years.map(() => 0),
+    perHistory:  years.map(() => 0),
+    pbrHistory:  years.map(() => 0),
+    epsHistory:  years.map(() => 0),
+    bpsHistory:  years.map(() => 0),
   };
 }

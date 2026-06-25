@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="summary-metric"><div class="label">PBR</div><div class="value">${fmt2(stock.pbr)}</div></div>
         <div class="summary-metric"><div class="label">ROE</div><div class="value">${fmt2(stock.roe, '%')}</div></div>
         <div class="summary-metric"><div class="label">배당수익률</div><div class="value">${fmt2(stock.dividendYield, '%')}</div></div>
-        <div class="summary-metric"><div class="label">주식발행수</div><div class="value">${stock.shares}</div></div>
+        <div class="summary-metric"><div class="label">부채비율</div><div class="value">${fmt2(stock.debtRatio, '%')}</div></div>
       </div>
     </section>
 
@@ -83,14 +83,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       <h2>재무제표 상세</h2>
 
       <div class="financial-block">
-        <h3>기본 정보</h3>
+        <h3>회사 정보</h3>
         <div class="info-grid">
-          <div class="info-card"><div class="label">현재가</div><div class="value">${formatPrice(stock.price)}</div></div>
-          <div class="info-card"><div class="label">시가총액</div><div class="value">${formatMarketCap(stock.marketCap)}</div></div>
-          <div class="info-card"><div class="label">주식발행수</div><div class="value">${stock.shares}</div></div>
-          <div class="info-card"><div class="label">업종</div><div class="value">${stock.sector}</div></div>
+          <div class="info-card"><div class="label">회사이름</div><div class="value">${formatPrice(stock.price)}</div></div>
+          <div class="info-card"><div class="label">대표이름</div><div class="value">${formatMarketCap(stock.marketCap)}</div></div>
+          <div class="info-card"><div class="label">상장일</div><div class="value">${'-'}</div></div>
+          <div class="info-card"><div class="label">업종구분</div><div class="value">${stock.sector}</div></div>
           <div class="info-card"><div class="label">시장구분</div><div class="value">${stock.market}</div></div>
-          <div class="info-card"><div class="label">상장일</div><div class="value">${stock.listedDate}</div></div>
         </div>
       </div>
 
@@ -152,6 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <canvas class="chart-canvas" id="balanceChart"></canvas>
       </div>
     </section>
+
   `;
 
   document.getElementById('backBtn').addEventListener('click', () => history.back());
