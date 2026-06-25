@@ -85,13 +85,6 @@ public class StockPriceCollector {
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
 
             try {
-
-                // 이미 해당 종목 + 날짜 데이터가 있으면 중복 저장 방지
-                if (stockPriceRepository.findBySrtnCdAndBasDt(company.getStockCode(), date).isPresent()) {
-                    log.info("이미 존재, 스킵: {} {}", company.getStockCode(), date);
-                    continue;
-                }
-
                 // 공공데이터 API 호출 → XML 문자열 반환
                 String xml = requestApiWithRetry(company.getStockCode(), date);
 
@@ -113,7 +106,6 @@ public class StockPriceCollector {
                 log.error("날짜 수집 실패: {} {}", company.getStockCode(), date, e);
             }
         }
-
         return savedCount;
     }
 

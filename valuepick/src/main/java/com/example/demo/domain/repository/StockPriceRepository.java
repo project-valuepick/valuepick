@@ -15,10 +15,6 @@ import java.util.Optional;
 @Repository
 public interface StockPriceRepository extends JpaRepository<StockPrice, StockPriceId> {
 
-    // 종목코드 + 날짜로 중복 체크 - 동일 데이터 재저장 방지용
-    // 기존 findByStockCodeAndTradeDate → 새 필드명 srtnCd, basDt로 변경
-    Optional<StockPrice> findBySrtnCdAndBasDt(String srtnCd, LocalDate basDt);
-
     // 특정 종목의 가장 최신 주가 조회 - 지표 계산 시 현재 주가로 사용
     // 기존 findTopByStockCodeOrderByTradeDateDesc → srtnCd, basDt로 변경
     Optional<StockPrice> findTopBySrtnCdOrderByBasDtDesc(String srtnCd);

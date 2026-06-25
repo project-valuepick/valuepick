@@ -16,8 +16,12 @@ public class CompanyScheduler {
     // 매년 1월 1일 새벽 1시
     @Scheduled(cron = "0 0 1 1 1 *")
     public void collectCompany() {
-        log.info("[CompanyScheduler] 기업정보 수집 시작");
-        dartCompanyCollector.collectCompanies();
-        log.info("[CompanyScheduler] 기업정보 수집 완료");
+        try {
+            log.info("[CompanyScheduler] 기업정보 수집 시작");
+            dartCompanyCollector.collectCompanies();
+            log.info("[CompanyScheduler] 기업정보 수집 완료");
+        } catch (Exception e) {
+            log.error("[CompanyScheduler] 기업정보 수집 실패", e);
+        }
     }
 }

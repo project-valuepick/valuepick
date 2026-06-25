@@ -128,32 +128,25 @@ public class DividendCollector {
 
         // 보통주 저장 - dividendKind = "보통주"
         if (commonAmount != null) {
-            if (!dividendInfoRepository.existsByCorpCodeAndDividendKind(company.getCorpCode(), "보통주")) {
-                dividendInfoRepository.save(DividendInfo.builder()
-                        .corpCode(company.getCorpCode())
-                        .dividendKind("보통주")
-                        .dividendAmount(commonAmount)
-                        .stlmDt(stlmDt)
-                        .build());
-                count++;
-            } else {
-                log.info("보통주 이미 존재, 스킵: {}", company.getCorpName());
-            }
+            dividendInfoRepository.save(DividendInfo.builder()
+                    .corpCode(company.getCorpCode())
+                    .dividendKind("보통주")
+                    .dividendAmount(commonAmount)
+                    .stlmDt(stlmDt)
+                    .build());
+            count++;
         }
+
 
         // 우선주 저장 - dividendKind = "우선주" (데이터 있을 때만)
         if (preferredAmount != null) {
-            if (!dividendInfoRepository.existsByCorpCodeAndDividendKind(company.getCorpCode(), "우선주")) {
-                dividendInfoRepository.save(DividendInfo.builder()
-                        .corpCode(company.getCorpCode())
-                        .dividendKind("우선주")
-                        .dividendAmount(preferredAmount)
-                        .stlmDt(stlmDt)
-                        .build());
-                count++;
-            } else {
-                log.info("우선주 이미 존재, 스킵: {}", company.getCorpName());
-            }
+            dividendInfoRepository.save(DividendInfo.builder()
+                    .corpCode(company.getCorpCode())
+                    .dividendKind("우선주")
+                    .dividendAmount(preferredAmount)
+                    .stlmDt(stlmDt)
+                    .build());
+            count++;
         }
 
         if (count == 0) {
