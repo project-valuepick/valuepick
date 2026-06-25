@@ -16,4 +16,7 @@ public interface ExchangeRepository extends JpaRepository<Exchange, String> {
 
     // 데이터 삭제 매서드
     void deleteByBaseDateBefore(LocalDate date);
+   
+    List<Exchange> findAllByOrderByBaseDate();
+
 }
