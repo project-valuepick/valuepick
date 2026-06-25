@@ -92,11 +92,13 @@ public class InfoController {
                 perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax, page, size));
     }
 
-    // 기업명 검색
+    // 기업명 검색 (페이징)
     @GetMapping(value = "/search",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> search(
-            @RequestParam String keyword) throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword));
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword, page, size));
     }
 
 }

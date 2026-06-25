@@ -72,17 +72,6 @@ function normalizeRankStock(s) {
   };
 }
 
-// 클라이언트 페이징
-function paginate(arr, page, size) {
-  const total      = arr.length;
-  const totalPages = Math.ceil(total / size) || 1;
-  return {
-    stocks:     arr.slice(page * size, page * size + size),
-    totalCount: total,
-    totalPages,
-    page,
-  };
-}
 
 /**
  * 시장 지표 (코스피 + 환율)
@@ -154,12 +143,17 @@ async function fetchStocks(params = {}) {
   const { keyword, page = 0, size = 10,
           perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax } = params;
 
-  // 키워드 검색
+  // 키워드 검색 (서버 페이징)
   if (keyword) {
-    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}`);
+    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
     if (!res.ok) throw new Error(`fetchStocks(search) failed: ${res.status}`);
     const body = await res.json();
-    return paginate((body.result || []).map(normalizeStock), page, size);
+    return {
+      stocks:     (body.result || []).map(normalizeStock),
+      totalCount: body.totalCount ?? 0,
+      totalPages: body.totalPages ?? 1,
+      page:       body.page      ?? page,
+    };
   }
 
   // 필터 적용

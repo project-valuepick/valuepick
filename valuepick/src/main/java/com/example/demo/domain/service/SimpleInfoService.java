@@ -27,8 +27,8 @@ public interface SimpleInfoService {
                                          Double pbrMin, Double pbrMax,
                                          Double dyMin,  Double dyMax,
                                          int page, int size) throws Exception;
-    //search
-    Map<String,Object> getSerachResult(String keyword) throws Exception;
+    //search (페이징)
+    Map<String,Object> getSerachResult(String keyword, int page, int size) throws Exception;
     //코스피
     MarketIndexDto getKOSPI() throws Exception;
     //환율

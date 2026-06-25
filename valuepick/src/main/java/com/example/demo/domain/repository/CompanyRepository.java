@@ -24,8 +24,14 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
                     WHERE sp2.srtn_cd = c.stock_code
                 )
             WHERE c.corp_name LIKE %:keyword%
-            """, nativeQuery = true)
-    List<Object> searchByCorpName(@Param("keyword") String keyword);
+            """,
+            countQuery = """
+            SELECT COUNT(*)
+            FROM COMPANY c
+            WHERE c.corp_name LIKE %:keyword%
+            """,
+            nativeQuery = true)
+    Page<Object> searchByCorpName(@Param("keyword") String keyword, Pageable pageable);
 
     @Query(value = """
             SELECT c.stock_code, c.corp_name,
