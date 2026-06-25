@@ -139,10 +139,11 @@ async function fetchFeaturedStocks() {
  */
 async function fetchTop10(type = "value") {
   const urlMap = {
-    lowPer:  '/info/per',
-    lowPbr:  '/info/pbr',
-    highRoe: '/info/roe',
-    value:   '/info/top10',
+    lowPer:      '/info/per',
+    lowPbr:      '/info/pbr',
+    highRoe:     '/info/roe',
+    dividendYield: '/info/dividend-yield',
+    value:       '/info/top10',
   };
   const url = `${API_BASE}${urlMap[type] || '/info/top10'}`;
   const res = await fetch(url);

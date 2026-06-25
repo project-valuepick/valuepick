@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'rankPer', key: 'per',           title: '📈 저PER 순위',     type: 'lowPer'  },
     { id: 'rankPbr', key: 'pbr',           title: '📊 저PBR 순위',     type: 'lowPbr'  },
     { id: 'rankRoe', key: 'roe',           title: '💰 고ROE 순위',     type: 'highRoe' },
-    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'value'   },
+    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'dividendYield' },
   ];
 
   // 랭킹 섹션 로딩 표시
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       fetchTop10('lowPer'),
       fetchTop10('lowPbr'),
       fetchTop10('highRoe'),
-      fetchTop10('value'),
+      fetchTop10('dividendYield'),
     ]);
 
     const apiResults = [perStocks, pbrStocks, roeStocks, divStocks];

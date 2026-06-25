@@ -4,7 +4,7 @@ function renderHeader(activePage) {
   const navItems = [
     { href: 'index.html', label: '홈', key: 'home' },
     { href: 'list.html', label: '종목리스트', key: 'list' },
-    { href: 'index.html#ranking', label: '랭킹', key: 'ranking' },
+    { href: 'rank.html', label: '랭킹', key: 'ranking' },
     { href: '#', label: '관심종목', key: 'watchlist' },
   ];
 
