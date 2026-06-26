@@ -141,11 +141,14 @@ async function fetchTop(type = "value") {
  */
 async function fetchStocks(params = {}) {
   const { keyword, page = 0, size = 10,
-          perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax } = params;
+          perMin, perMax, pbrMin, pbrMax, roeMin, roeMax, divMin, divMax,
+          sort, dir } = params;
+
+  const sortQ = sort ? `&sort=${encodeURIComponent(sort)}&dir=${dir || 'desc'}` : '';
 
   // 키워드 검색 (서버 페이징)
   if (keyword) {
-    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`);
+    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}${sortQ}`);
     if (!res.ok) throw new Error(`fetchStocks(search) failed: ${res.status}`);
     const body = await res.json();
     return {
@@ -172,6 +175,7 @@ async function fetchStocks(params = {}) {
     if (divMax != null) q.set('dyMax', divMax);
     q.set('page', page);
     q.set('size', size);
+    if (sort) { q.set('sort', sort); q.set('dir', dir || 'desc'); }
     const res = await fetch(`${API_BASE}/info/list/filter?${q.toString()}`);
     if (!res.ok) throw new Error(`fetchStocks(filter) failed: ${res.status}`);
     const body = await res.json();
@@ -184,7 +188,7 @@ async function fetchStocks(params = {}) {
   }
 
   // 전체 목록 (서버 페이징)
-  const res = await fetch(`${API_BASE}/info/list?page=${page}&size=${size}`);
+  const res = await fetch(`${API_BASE}/info/list?page=${page}&size=${size}${sortQ}`);
   if (!res.ok) throw new Error(`fetchStocks(list) failed: ${res.status}`);
   const body = await res.json();
   return {
