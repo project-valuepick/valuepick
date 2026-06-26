@@ -130,6 +130,24 @@
   border-bottom: 1px solid var(--border);
 }
 
+.rank-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+.rank-more {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  transition: opacity 0.15s;
+}
+
+.rank-more:hover {
+  opacity: 0.7;
+}
+
 @media (max-width: 1024px) {
   .market-grid { grid-template-columns: repeat(2, 1fr); }
   .ranking-grid { grid-template-columns: repeat(2, 1fr); }
