@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const apiParams = { page: currentPage, size: PAGE_SIZE };
       if (searchQuery) apiParams.keyword = searchQuery;
       if (market) apiParams.market = market;
+      if (sortKey) { apiParams.sort = sortKey; apiParams.dir = sortDir; }
       if (filters.perMin != null) apiParams.perMin = filters.perMin;
       if (filters.perMax != null) apiParams.perMax = filters.perMax;
       if (filters.pbrMin != null) apiParams.pbrMin = filters.pbrMin;
@@ -72,10 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (filters[min] != null) result = result.filter((s) => s[key] >= filters[min]);
       if (filters[max] != null) result = result.filter((s) => s[key] <= filters[max]);
     });
-
-    if (sortKey) {
-      result = sortStocks(result, sortKey, sortDir);
-    }
 
     return result;
   }
@@ -203,9 +200,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     render();
   });
 
-  // 정렬
+  // 정렬 (서버 재조회)
   document.querySelectorAll('.stock-table th[data-sort]').forEach((th) => {
-    th.addEventListener('click', () => {
+    th.addEventListener('click', async () => {
       const key = th.dataset.sort;
       if (sortKey === key) {
         sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -215,6 +212,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       document.querySelectorAll('.stock-table th').forEach((h) => h.classList.remove('sorted'));
       th.classList.add('sorted');
+      currentPage = 0;
+      await loadStocks();
       render();
     });
   });

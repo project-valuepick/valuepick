@@ -20,15 +20,15 @@ public interface SimpleInfoService {
     //rank top 100 슬라이스 (무한스크롤)
     Map<String,Object> getTOP100(int page, int size) throws Exception;
     //list (페이징)
-    Map<String,Object> getList(int page, int size) throws Exception;
+    Map<String,Object> getList(int page, int size, String sort, String dir) throws Exception;
     //list with filter (per, roe, pbr, dividendYield 최소/최대, 페이징)
     Map<String,Object> getListWithFilter(Double perMin, Double perMax,
                                          Double roeMin, Double roeMax,
                                          Double pbrMin, Double pbrMax,
                                          Double dyMin,  Double dyMax,
-                                         int page, int size) throws Exception;
+                                         int page, int size, String sort, String dir) throws Exception;
     //search (페이징)
-    Map<String,Object> getSerachResult(String keyword, int page, int size) throws Exception;
+    Map<String,Object> getSerachResult(String keyword, int page, int size, String sort, String dir) throws Exception;
     //코스피
     MarketIndexDto getKOSPI() throws Exception;
     //환율

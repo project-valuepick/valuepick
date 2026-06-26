@@ -73,8 +73,10 @@ public class InfoController {
     @GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> getList(
             @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "10") int size) throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getList(page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String sort,
+            @RequestParam(required = false)    String dir) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getList(page, size, sort, dir));
     }
 
     // 필터 목록 (per, roe, pbr, dividendYield 최소/최대, 페이징)
@@ -89,9 +91,11 @@ public class InfoController {
             @RequestParam(required = false) Double dyMin,
             @RequestParam(required = false) Double dyMax,
             @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "10") int size) throws Exception {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String sort,
+            @RequestParam(required = false)    String dir) throws Exception {
         return ResponseEntity.ok(simpleInfoService.getListWithFilter(
-                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax, page, size));
+                perMin, perMax, roeMin, roeMax, pbrMin, pbrMax, dyMin, dyMax, page, size, sort, dir));
     }
 
     // 기업명 검색 (페이징)
@@ -99,8 +103,10 @@ public class InfoController {
     public ResponseEntity<Map<String, Object>> search(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0")  int page,
-            @RequestParam(defaultValue = "10") int size) throws Exception {
-        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword, page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String sort,
+            @RequestParam(required = false)    String dir) throws Exception {
+        return ResponseEntity.ok(simpleInfoService.getSerachResult(keyword, page, size, sort, dir));
     }
 
 }
