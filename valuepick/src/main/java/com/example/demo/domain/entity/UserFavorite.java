@@ -15,7 +15,7 @@ public class UserFavorite {
 
     @Id
     @Column(name = "user_id")
-    private String userId;
+    private Long userId;
 
     @Id
     @Column(name = "stock_code")
