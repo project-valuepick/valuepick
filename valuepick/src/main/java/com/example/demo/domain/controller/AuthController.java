@@ -7,7 +7,9 @@ import com.example.demo.domain.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +33,11 @@ public class AuthController {
     public ResponseEntity<TokenInfo> login(@Valid @RequestBody LoginRequest request) {
         TokenInfo tokenInfo = authService.login(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(tokenInfo);
+    }
+
+    // 임시 예외처리 - 추후 GlobalExceptionHandler 로 이전 예정
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 }
