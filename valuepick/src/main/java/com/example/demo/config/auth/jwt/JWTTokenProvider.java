@@ -2,6 +2,7 @@ package com.example.demo.config.auth.jwt;
 
 import com.example.demo.config.auth.PrincipalDetails;
 import com.example.demo.domain.dto.UserDto;
+import com.example.demo.domain.entity.User;
 import com.example.demo.domain.entity.UserRole;
 import com.example.demo.domain.repository.UserRepository;
 import io.jsonwebtoken.*;
@@ -114,6 +115,38 @@ public class JWTTokenProvider {
             log.info("[ExpiredJwtException] {}", e.getMessage());
             throw new ExpiredJwtException(null, null, null);
         }
+    }
+
+    // RefreshToken 재발급 시 email로 직접 토큰 생성
+    public TokenInfo generateTokenByEmail(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            return null;
+        }
+
+        User user = userRepository.findByEmail(email).get();
+        String authority = "ROLE_" + user.getRole().name();
+
+        long now = new Date().getTime();
+
+        String accessToken = Jwts.builder()
+                .setSubject(email)
+                .setExpiration(new Date(now + JWTProperties.ACCESS_TOKEN_EXPIRATION_TIME))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .claim("username", email)
+                .claim("auth", authority)
+                .compact();
+
+        String refreshToken = Jwts.builder()
+                .setSubject("Refresh_Token")
+                .setExpiration(new Date(now + JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        return TokenInfo.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public Key getKey() {

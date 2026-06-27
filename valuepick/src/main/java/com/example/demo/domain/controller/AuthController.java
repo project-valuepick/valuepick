@@ -35,6 +35,13 @@ public class AuthController {
         return ResponseEntity.ok(tokenInfo);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenInfo> refresh(@RequestBody java.util.Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        TokenInfo tokenInfo = authService.refresh(refreshToken);
+        return ResponseEntity.ok(tokenInfo);
+    }
+
     // 임시 예외처리 - 추후 GlobalExceptionHandler 로 이전 예정
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
