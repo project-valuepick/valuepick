@@ -95,7 +95,7 @@ function initRegister() {
     let valid = true;
     if (!email) { setFieldError('email', '이메일을 입력해주세요.'); valid = false; }
     if (!nickname) { setFieldError('nickname', '닉네임을 입력해주세요.'); valid = false; }
-    if (password.length < 8) { setFieldError('password', '비밀번호는 8자 이상이어야 합니다.'); valid = false; }
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) { setFieldError('password', '비밀번호는 영문+숫자 조합 8자 이상이어야 합니다.'); valid = false; }
     if (password !== passwordConfirm) { setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.'); valid = false; }
     if (!valid) return;
 
