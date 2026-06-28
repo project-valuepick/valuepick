@@ -3,6 +3,7 @@ package com.example.demo.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "COMPANY")
@@ -31,9 +32,21 @@ public class Company {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public void updateCorpCls(String corpCls) {
-        this.corpCls = corpCls;
-    }
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<FinancialStatement> financialStatements;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<StockPrice> stockPrices;
+
+    @OneToOne(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private StockIndicator stockIndicator;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<DividendInfo> dividendInfos;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Top100> top100List;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserFavorite> userFavorites;
 }
-
-

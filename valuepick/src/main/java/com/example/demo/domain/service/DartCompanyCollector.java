@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -16,9 +17,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipInputStream;
 
 @Service
@@ -30,69 +32,65 @@ public class DartCompanyCollector {
     private final RestTemplate restTemplate;
 
     @Value("${dart.api.key}")
-    private String apiKey;
+    private String dartApiKey;
 
-    private static final int SLEEP_MS = 100; // company.json 개별 호출이라 넉넉하게 설정
-    private static final String COMPANY_URL = "https://opendart.fss.or.kr/api/company.json";
+    @Value("${stock.api.key}")
+    private String stockApiKey;
 
-    // @Async로 백그라운드 실행 - 컨트롤러가 즉시 응답 반환 가능
-    // dartExecutor 스레드풀 사용 - DART API 호출 제한 고려
+    private static final String KRX_LISTED_URL = "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo";
+
 
     @Async("dartExecutor")
-    public void collectCompanies() {
+    public void collectCompanies(String basDt) {
 
         try {
 
-            // 1단계: corpCode.xml에서 상장사 corpCode 목록 추출
-            List<String> corpCodes = collectCorpCodes();
-            log.info("상장사 corpCode 수집 완료: {}건", corpCodes.size());
+            // 1단계: KRX 상장종목 정보 수집 (KOSPI + KOSDAQ)
+            Map<String, KrxStockInfo> krxStockMap = collectKrxStockInfo(basDt);
+            log.info("KRX 상장 종목 수집 완료: {}건", krxStockMap.size());
 
-            // 기존 데이터 전체 삭제 - 루프 시작 전 한 번만 실행
-            companyRepository.deleteAllInBatch();
+            // 2단계: DART corpCode.xml에서 KRX 종목과 매핑되는 stockCode→corpCode 맵 추출
+            Map<String, String> stockToCorpMap = collectCorpCodeMap(krxStockMap.keySet());
+            log.info("DART corpCode 매핑 완료: {}건", stockToCorpMap.size());
+
+            // 3단계: DB에 있지만 KRX 목록에 없는 종목 = 상장폐지 → cascade 삭제
+            Set<String> currentListedCodes = krxStockMap.keySet();
+            List<String> delistedCodes = companyRepository.findAllIds().stream()
+                    .filter(code -> !currentListedCodes.contains(code))
+                    .toList();
+
+            if (!delistedCodes.isEmpty()) {
+                companyRepository.deleteAllById(delistedCodes);
+                log.info("상장폐지 종목 삭제: {}건", delistedCodes.size());
+            }
 
             int savedCount = 0;
 
-            // 2단계: 각 corpCode로 company.json 호출해서 Company 엔티티 하나씩 즉시 저장
-            for (String corpCode : corpCodes) {
+            // 4단계: KRX 정보 + corpCode 합쳐서 Company 저장
+            for (Map.Entry<String, String> entry : stockToCorpMap.entrySet()) {
+
+                String stockCode = entry.getKey();
+                String corpCode = entry.getValue();
+                KrxStockInfo krxInfo = krxStockMap.get(stockCode);
+
+                if (krxInfo == null) continue;
 
                 try {
-
-                    // company.json API 호출 - corpCode로 개별 기업 상세 조회
-                    String url = COMPANY_URL + "?crtfc_key=" + apiKey + "&corp_code=" + corpCode;
-                    Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
-                    // 응답 없거나 실패면 스킵
-                    if (response == null || !"000".equals(response.get("status"))) {
-                        log.warn("API 실패: {} - {}", corpCode, response != null ? response.get("status") : "null");
-                        continue;
-                    }
-
-                    // company.json 응답에서 필요한 값 추출
-                    String stockCode = (String) response.get("stock_code"); // 종목코드
-                    String corpName  = (String) response.get("corp_name");  // 회사명
-                    String corpCls   = (String) response.get("corp_cls");   // 법인구분 Y:코스피, K:코스닥, N:코넥스, E:기타
-
-                    // 종목코드 없으면 비상장사이므로 제외
-                    if (stockCode == null || stockCode.isBlank()) continue;
-
-                    // Company 엔티티 생성 후 즉시 저장
                     Company company = Company.builder()
                             .stockCode(stockCode)
                             .corpCode(corpCode)
-                            .corpName(corpName)
-                            .corpCls(corpCls)
+                            .corpName(krxInfo.corpName())
+                            .corpCls(krxInfo.corpCls())
                             .createdAt(LocalDateTime.now())
                             .updatedAt(LocalDateTime.now())
                             .build();
 
-                    companyRepository.save(company); // 하나씩 즉시 저장
+                    companyRepository.save(company);
                     savedCount++;
-                    log.info("기업정보 저장 완료: {} {} {} (total={})", corpName, stockCode, corpCls, savedCount);
-
-                    Thread.sleep(SLEEP_MS); // DART API 호출 제한 방지
+                    log.info("기업정보 저장 완료: {} {} {} (total={})", krxInfo.corpName(), stockCode, krxInfo.corpCls(), savedCount);
 
                 } catch (Exception e) {
-                    log.error("기업 처리 실패: {}", corpCode, e);
+                    log.error("기업 처리 실패: {}", stockCode, e);
                 }
             }
 
@@ -104,16 +102,70 @@ public class DartCompanyCollector {
         }
     }
 
-    // corpCode.xml에서 상장사 corpCode 목록만 추출
-    private List<String> collectCorpCodes() throws Exception {
+    // KRX 상장종목 API 호출 후 KOSPI/KOSDAQ 필터링 및 스팩/리츠 제외
+    private Map<String, KrxStockInfo> collectKrxStockInfo(String basDt) {
 
-        // DART 기업목록 ZIP 파일 다운로드
-        String url = "https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=" + apiKey;
+        Map<String, KrxStockInfo> stockMap = new HashMap<>();
+
+        String url = UriComponentsBuilder.fromHttpUrl(KRX_LISTED_URL)
+                .queryParam("serviceKey", stockApiKey)
+                .queryParam("numOfRows", 4000) // 전체 종목 한 번에 수신
+                .queryParam("pageNo", 1)
+                .queryParam("resultType", "json")
+                .queryParam("basDt", basDt)
+                .build(false)
+                .toUriString();
+
+        try {
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+            if (response == null) {
+                log.warn("KRX 상장종목 API 응답 없음");
+                return stockMap;
+            }
+
+            Map<String, Object> responseBody = (Map<String, Object>) response.get("response");
+            Map<String, Object> body = (Map<String, Object>) responseBody.get("body");
+            Map<String, Object> items = (Map<String, Object>) body.get("items");
+            List<Map<String, Object>> itemList = (List<Map<String, Object>>) items.get("item");
+
+            for (Map<String, Object> item : itemList) {
+                // A 접두사 제거 (KRX srtnCd는 A로 시작)
+                String srtnCd = ((String) item.get("srtnCd")).trim().replaceAll("^A", "");
+                String itmsNm = ((String) item.get("itmsNm")).trim();
+                String mrktCtgValue = ((String) item.get("mrktCtg")).trim();
+
+                // KOSPI, KOSDAQ 외 제외 (KONEX 등)
+                if (!"KOSPI".equals(mrktCtgValue) && !"KOSDAQ".equals(mrktCtgValue)) continue;
+
+                // 스팩, 리츠 등 투자 분석 대상 아닌 종목 제외
+                if (isExcludedStock(itmsNm)) continue;
+
+                // KOSPI → Y, KOSDAQ → K
+                String corpCls = "KOSPI".equals(mrktCtgValue) ? "Y" : "K";
+
+                if (!srtnCd.isBlank()) {
+                    stockMap.put(srtnCd, new KrxStockInfo(itmsNm, corpCls));
+                }
+            }
+
+            log.info("KRX 전체 종목 수집 완료: {}건", stockMap.size());
+
+        } catch (Exception e) {
+            log.error("KRX 상장종목 수집 실패", e);
+        }
+
+        return stockMap;
+    }
+
+    // DART corpCode.xml에서 KRX 상장 종목에 해당하는 stockCode→corpCode 맵 추출
+    private Map<String, String> collectCorpCodeMap(Set<String> listedStockCodes) throws Exception {
+
+        String url = "https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=" + dartApiKey;
         byte[] zipData = restTemplate.getForObject(url, byte[].class);
 
         if (zipData == null) throw new RuntimeException("DART 응답 없음");
 
-        // ZIP 압축 해제 후 XML 파싱
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipData));
         zis.getNextEntry();
 
@@ -122,26 +174,34 @@ public class DartCompanyCollector {
         Document document = builder.parse(zis);
 
         NodeList nodeList = document.getElementsByTagName("list");
-
-        List<String> corpCodes = new ArrayList<>();
+        Map<String, String> stockToCorpMap = new HashMap<>();
 
         for (int i = 0; i < nodeList.getLength(); i++) {
-
             Element element = (Element) nodeList.item(i);
-
-            // 종목코드 확인 - 없으면 비상장사이므로 제외
             String stockCode = element.getElementsByTagName("stock_code")
                     .item(0).getTextContent().trim();
 
-            if (stockCode.isBlank()) continue;
+            // KRX 상장 종목에 없는 종목은 스킵
+            if (stockCode.isBlank() || !listedStockCodes.contains(stockCode)) continue;
 
-            // 상장사만 corpCode 추출
             String corpCode = element.getElementsByTagName("corp_code")
                     .item(0).getTextContent().trim();
 
-            corpCodes.add(corpCode);
+            stockToCorpMap.put(stockCode, corpCode);
         }
 
-        return corpCodes;
+        return stockToCorpMap;
     }
+
+    // 종목명 기반 제외 여부 판단
+    // 리츠: 부동산투자회사법상 상호 끝에 "리츠" 의무 표기 → endsWith로 오탐 방지 (메리츠, 블리츠 등 제외)
+    // 스팩/기업인수목적: 자본시장법상 상호에 반드시 포함 → contains로 충분
+    private boolean isExcludedStock(String corpName) {
+        return corpName.endsWith("리츠")
+                || corpName.contains("스팩")
+                || corpName.contains("기업인수목적");
+    }
+
+    // KRX 종목 정보 담는 레코드
+    private record KrxStockInfo(String corpName, String corpCls) {}
 }

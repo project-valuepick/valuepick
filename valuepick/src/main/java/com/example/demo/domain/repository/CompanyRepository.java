@@ -8,10 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, String> {
+
+    @Query("SELECT c.stockCode FROM Company c")
+    List<String> findAllIds();
 
     // 페이징 처리된 Company 전체 조회 - 대용량 데이터를 100건씩 나눠서 처리할 때 사용
     Page<Company> findAll(Pageable pageable);
