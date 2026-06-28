@@ -61,7 +61,9 @@ function initLogin() {
     btn.textContent = '로그인 중...';
 
     try {
-      await apiCall('/api/users/login', { email, password });
+      const data = await apiCall('/api/auth/login', { email, password });
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
       showAlert('로그인 성공! 잠시 후 이동합니다.', 'success');
       setTimeout(() => { window.location.href = 'index.html'; }, 1000);
     } catch (err) {
@@ -93,7 +95,7 @@ function initRegister() {
     let valid = true;
     if (!email) { setFieldError('email', '이메일을 입력해주세요.'); valid = false; }
     if (!nickname) { setFieldError('nickname', '닉네임을 입력해주세요.'); valid = false; }
-    if (password.length < 8) { setFieldError('password', '비밀번호는 8자 이상이어야 합니다.'); valid = false; }
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) { setFieldError('password', '비밀번호는 영문+숫자 조합 8자 이상이어야 합니다.'); valid = false; }
     if (password !== passwordConfirm) { setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.'); valid = false; }
     if (!valid) return;
 
@@ -101,7 +103,7 @@ function initRegister() {
     btn.textContent = '가입 중...';
 
     try {
-      await apiCall('/api/users/register', { email, nickname, password });
+      await apiCall('/api/auth/register', { email, nickname, password });
       showAlert('회원가입 완료! 로그인 페이지로 이동합니다.', 'success');
       setTimeout(() => { window.location.href = 'login.html'; }, 1200);
     } catch (err) {

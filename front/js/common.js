@@ -32,8 +32,10 @@ function renderHeader(activePage) {
             </svg>
             <input type="text" class="search-input" id="headerSearch" placeholder="종목명 또는 종목코드 검색" aria-label="종목 검색" />
           </div>
-          <a class="btn-text" href="login.html">로그인</a>
-          <a class="btn-primary" href="register.html">회원가입</a>
+          ${localStorage.getItem('accessToken')
+            ? `<button class="btn-text" id="logoutBtn">로그아웃</button>`
+            : `<a class="btn-text" href="login.html">로그인</a><a class="btn-primary" href="register.html">회원가입</a>`
+          }
         </div>
       </div>
     </header>
@@ -49,6 +51,12 @@ function initHeader(activePage) {
   const toggle = document.getElementById('menuToggle');
   const nav = document.getElementById('mainNav');
   toggle?.addEventListener('click', () => nav?.classList.toggle('open'));
+
+  document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = 'login.html';
+  });
 
   const searchInput = document.getElementById('headerSearch');
   searchInput?.addEventListener('keydown', (e) => {
