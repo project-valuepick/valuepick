@@ -132,42 +132,63 @@ public class DartFinancialCollector {
     // CFS(연결재무제표) 우선, 없으면 OFS(별도재무제표) 사용
     private FinancialStatementDto mapToDto(Company company, List<DartItem> items,
                                            String year, String reprtCode) {
-        Map<String, Long> cfsMap = new HashMap<>(); // 연결재무제표 항목 맵
-        Map<String, Long> ofsMap = new HashMap<>(); // 별도재무제표 항목 맵
+        Map<String, Long> cfsMap = new HashMap<>();
+        Map<String, Long> ofsMap = new HashMap<>();
+        String cfsCurrency = "KRW";
+        String ofsCurrency = "KRW";
 
         for (DartItem item : items) {
             String name = item.getAccountNm();
             Long value = parseAmount(item.getAmount());
-            String fsDiv = item.getFsDiv(); // "CFS" or "OFS"
+            String fsDiv = item.getFsDiv();
 
-            if ("CFS".equals(fsDiv)) {
+            // 중복 계정 처리 - 먼저 나온 값(ord 작은 것) 우선
+            if ("CFS".equals(fsDiv) && !cfsMap.containsKey(name)) {
                 cfsMap.put(name, value);
-            } else if ("OFS".equals(fsDiv)) {
+                if (item.getCurrency() != null && !item.getCurrency().isBlank())
+                    cfsCurrency = item.getCurrency();
+            } else if ("OFS".equals(fsDiv) && !ofsMap.containsKey(name)) {
                 ofsMap.put(name, value);
+                if (item.getCurrency() != null && !item.getCurrency().isBlank())
+                    ofsCurrency = item.getCurrency();
             }
         }
 
-        // CFS 데이터가 있으면 "CFS", 없으면 "OFS"로 fsDiv 결정
+        // CFS 데이터가 있으면 CFS 우선 (단일 계정 유무로 판단하던 방식 제거)
         String finalFsDiv = !cfsMap.isEmpty() ? "CFS" : "OFS";
+        Map<String, Long> primary  = "CFS".equals(finalFsDiv) ? cfsMap : ofsMap;
+        Map<String, Long> fallback = "CFS".equals(finalFsDiv) ? ofsMap : cfsMap;
+        String currency = "CFS".equals(finalFsDiv) ? cfsCurrency : ofsCurrency;
 
         return FinancialStatementDto.builder()
                 .bsnsYear(year)
                 .stockCode(company.getStockCode())
-                .reprtCode(reprtCode)                              // 보고서 코드 (11011 등)
+                .reprtCode(reprtCode)
                 .fsDiv(finalFsDiv)
-                .revenue(getValue(cfsMap, ofsMap, "매출액"))
-                .operatingIncome(getValue(cfsMap, ofsMap, "영업이익"))
-                .netIncome(getValue(cfsMap, ofsMap, "당기순이익(손실)"))
-                .totalAssets(getValue(cfsMap, ofsMap, "자산총계"))
-                .totalLiabilities(getValue(cfsMap, ofsMap, "부채총계"))
-                .totalEquity(getValue(cfsMap, ofsMap, "자본총계"))
+                .currency(currency)
+                .revenue(pickAny(primary, fallback, "매출액", "영업수익"))
+                .operatingIncome(pick(primary, fallback, "영업이익"))
+                .netIncome(pickAny(primary, fallback, "당기순이익(손실)", "당기순이익", "당기순손익"))
+                .totalAssets(pick(primary, fallback, "자산총계"))
+                .totalLiabilities(pick(primary, fallback, "부채총계"))
+                .totalEquity(pick(primary, fallback, "자본총계"))
                 .build();
     }
 
-    // CFS 우선, 없으면 OFS, 둘 다 없으면 0
-    private Long getValue(Map<String, Long> cfsMap, Map<String, Long> ofsMap, String accountNm) {
-        if (cfsMap.containsKey(accountNm)) return cfsMap.get(accountNm);
-        if (ofsMap.containsKey(accountNm)) return ofsMap.get(accountNm);
+    private Long pick(Map<String, Long> primary, Map<String, Long> fallback, String accountNm) {
+        if (primary.containsKey(accountNm)) return primary.get(accountNm);
+        if (fallback.containsKey(accountNm)) return fallback.get(accountNm);
+        return 0L;
+    }
+
+    // 여러 계정명 중 처음 매칭되는 값 반환 (기업마다 계정명 표기 다를 때 사용)
+    private Long pickAny(Map<String, Long> primary, Map<String, Long> fallback, String... accountNames) {
+        for (String name : accountNames) {
+            if (primary.containsKey(name)) return primary.get(name);
+        }
+        for (String name : accountNames) {
+            if (fallback.containsKey(name)) return fallback.get(name);
+        }
         return 0L;
     }
 
