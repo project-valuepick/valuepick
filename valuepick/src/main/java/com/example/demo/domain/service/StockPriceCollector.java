@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -37,8 +36,6 @@ public class StockPriceCollector {
     @Value("${stock.api.key}")
     private String apiKey;
 
-    // 비동기 실행 - 전체 종목 주가 수집 (백그라운드 처리)
-    @Async("stockExecutor")
     public void collect(LocalDate startDate, LocalDate endDate) {
 
         int savedCount = 0;
@@ -124,7 +121,7 @@ public class StockPriceCollector {
             } catch (HttpClientErrorException e) {
                 if (e.getStatusCode().value() == 429) {
                     log.warn("429 Too Many Requests - 재시도 {}/{}: {} {}", i + 1, maxRetry, stockCode, date);
-                    Thread.sleep(1000L * (i + 1)); // 1초, 2초, 3초 대기
+                    Thread.sleep(3000L * (i + 1)); // 1초, 2초, 3초 대기
                 } else {
                     throw e; // 429 외 다른 에러는 바로 던짐
                 }
