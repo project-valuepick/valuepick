@@ -61,7 +61,9 @@ function initLogin() {
     btn.textContent = '로그인 중...';
 
     try {
-      await apiCall('/api/users/login', { email, password });
+      const data = await apiCall('/api/auth/login', { email, password });
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
       showAlert('로그인 성공! 잠시 후 이동합니다.', 'success');
       setTimeout(() => { window.location.href = 'index.html'; }, 1000);
     } catch (err) {
@@ -101,7 +103,7 @@ function initRegister() {
     btn.textContent = '가입 중...';
 
     try {
-      await apiCall('/api/users/register', { email, nickname, password });
+      await apiCall('/api/auth/register', { email, nickname, password });
       showAlert('회원가입 완료! 로그인 페이지로 이동합니다.', 'success');
       setTimeout(() => { window.location.href = 'login.html'; }, 1200);
     } catch (err) {
