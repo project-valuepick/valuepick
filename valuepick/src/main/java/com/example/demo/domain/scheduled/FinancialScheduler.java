@@ -100,7 +100,7 @@ public class FinancialScheduler {
         try {
             String year = String.valueOf(LocalDate.now().getYear());
             log.info("[FinancialScheduler] 3분기보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(year, "11011");
+            financialIndicatorService.calculateAll(year, "11014");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 3분기보고서 지표계산 실패", e);
         }

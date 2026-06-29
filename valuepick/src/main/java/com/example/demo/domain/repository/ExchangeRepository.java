@@ -19,4 +19,6 @@ public interface ExchangeRepository extends JpaRepository<Exchange, String> {
    
     List<Exchange> findAllByOrderByBaseDate();
 
+    Optional<Exchange> findTopByCurUnitOrderByBaseDateDesc(String curUnit);
+
 }

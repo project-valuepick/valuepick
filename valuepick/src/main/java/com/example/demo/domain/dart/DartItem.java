@@ -32,4 +32,7 @@ public class DartItem {
 
     @JsonProperty("fs_div")
     private String fsDiv;       // CFS OFS
+
+    @JsonProperty("currency")
+    private String currency; // 통화 단위 (KRW, USD 등)
 }

@@ -21,6 +21,8 @@ public class FinancialStatementDto {
     private Long totalAssets;
     private Long totalLiabilities;
     private Long totalEquity;
+    private String currency;
+
 
     public FinancialStatement toEntity(Company company) {
         return FinancialStatement.builder()
@@ -34,6 +36,7 @@ public class FinancialStatementDto {
                 .totalAssets(this.totalAssets)
                 .totalLiabilities(this.totalLiabilities)
                 .totalEquity(this.totalEquity)
+                .currency(this.currency)
                 .build();
     }
 
@@ -50,6 +53,7 @@ public class FinancialStatementDto {
                 .totalAssets(entity.getTotalAssets())
                 .totalLiabilities(entity.getTotalLiabilities())
                 .totalEquity(entity.getTotalEquity())
+                .currency(entity.getCurrency())
                 .build();
     }
 }

@@ -20,9 +20,9 @@ public class StockPriceScheduler {
     @Scheduled(cron = "0 0 16 * * MON-FRI")
     public void collectStockPrice() {
         try {
-            LocalDate today = LocalDate.now();
-            log.info("[StockPriceScheduler] 주가 수집 시작 - date={}", today);
-            stockPriceCollector.collect(today, today);
+            LocalDate yesterday = LocalDate.now().minusDays(1); // 전일 기준
+            log.info("[StockPriceScheduler] 주가 수집 시작 - date={}", yesterday);
+            stockPriceCollector.collect(yesterday, yesterday);
         } catch (Exception e) {
             log.error("[StockPriceScheduler] 주가 수집 실패", e);
         }

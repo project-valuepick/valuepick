@@ -12,28 +12,26 @@ class CollectorTest {
 
     @Autowired
     private DartCompanyCollector dartCompanyCollector;
-
     @Autowired
     private DartFinancialCollector dartFinancialCollector;
-
     @Autowired
     private DividendCollector dividendCollector;
-
     @Autowired
     private StockPriceCollector stockPriceCollector;
-
     @Autowired
     private ExchangeRateApiService exchangeRateApiService;
-
     @Autowired
     private MarketIndexService marketIndexService;
-
     @Autowired
     private FinancialIndicatorService financialIndicatorService;
+    @Autowired
+    private Top100Service top100Service;
+
+
 
     @Test
     public void t1_기업정보수집() {
-        dartCompanyCollector.collectCompanies();
+        dartCompanyCollector.collectCompanies("20260623");
     }
 
     @Test
@@ -48,22 +46,27 @@ class CollectorTest {
 
     @Test
     public void t4_주가수집() {
-        LocalDate date = LocalDate.of(2026, 6,22);
+        LocalDate date = LocalDate.of(2026, 6,23);
         stockPriceCollector.collect(date, date);
     }
 
     @Test
     public void t5_환율수집() {
-        exchangeRateApiService.fetchAndSaveExchangeRatesForToday();
+        exchangeRateApiService.fetchAndSaveExchangeRates("20260623");
     }
 
     @Test
     public void t6_코스피지수수집() {
-        marketIndexService.fetchAndSave("20260622");
+        marketIndexService.fetchAndSave("20260623");
     }
 
     @Test
     public void t7_지표계산() {
         financialIndicatorService.calculateAll("2025", "11011");
+    }
+
+    @Test
+    public void t8_Top100스코어계산() {
+        top100Service.calculateAndSave();
     }
 }

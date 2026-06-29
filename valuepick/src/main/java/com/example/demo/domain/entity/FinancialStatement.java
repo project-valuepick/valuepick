@@ -45,4 +45,7 @@ public class FinancialStatement {
 
     @Column(name = "total_equity")
     private Long totalEquity;
+
+    @Column(name = "currency", length = 10)
+    private String currency;
 }

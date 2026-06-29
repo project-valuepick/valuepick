@@ -10,6 +10,10 @@ import java.util.List;
 // StockIndicator의 PK는 stock_code(String) - 기존 FinancialIndicator(Long PK)에서 변경됨
 @Repository
 public interface StockIndicatorRepository extends JpaRepository<StockIndicator, String> {
+
+    // Top100 스코어 계산 시 company(corpCode) 를 한 번에 로드 — N+1 방지
+    @Query("SELECT i FROM StockIndicator i JOIN FETCH i.company WHERE i.per IS NOT NULL AND i.pbr IS NOT NULL AND i.roe IS NOT NULL")
+    List<StockIndicator> findAllWithCompanyForScoring();
     //지표 테이블 들어오는 것 보고 다시 수정요망
     @Query(value = """
             SELECT i.stock_code, i.per, c.corp_name

@@ -12,6 +12,10 @@ import java.util.List;
 
 public interface Top100Repository extends JpaRepository<Top100, Top100Id> {
 
+    boolean existsByBaseDt(LocalDate baseDt);
+
+    void deleteByBaseDtBefore(LocalDate cutoff);
+
     @Query(value = """
             SELECT t.stock_code, c.corp_name,
                    i.per, i.roe, i.pbr, i.dividend_yield,
