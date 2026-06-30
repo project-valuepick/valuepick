@@ -6,7 +6,10 @@ function formatPrice(price) {
 
 function formatMarketCap(cap) {
   if (cap == null) return '-';
-  return Math.round(cap / 10000).toLocaleString('ko-KR') + '만원';
+  else if(Math.round(cap/1000000000000>=1)) return (Math.round((cap  /1000000000000)*10)/10).toLocaleString('ko-KR') + '조원';
+  else if(Math.round(cap/100000000>=1)) return (Math.round((cap  /100000000)*10)/10).toLocaleString('ko-KR') + '억원';
+  else if(cap/10000>=1) return (Math.round((cap / 10000) * 10) / 10).toLocaleString('ko-KR') + '만원';
+  else  return Math.round(cap).toLocaleString('ko-KR') + '원';
 }
 
 function fmt2(v, suffix = '') {
@@ -89,8 +92,8 @@ async function fetchMarketIndices() {
     result.push({
       name:         k.idxNm || 'KOSPI',
       value:        (Number(k.clsprcIdx) || 0).toLocaleString('ko-KR'),
-      changeRate:   Number(k.flucRt)       || 0,
-      changeAmount: Number(k.cmpprevddIdx) || 0,
+      changeRate:   Math.round(Number(k.flucRt)*100)/100       || 0,
+      changeAmount: Math.round(Number(k.cmpprevddIdx)*100)/100 || 0,
     });
   }
 
@@ -99,8 +102,8 @@ async function fetchMarketIndices() {
     result.push({
       name:         `${e.curUnit || 'USD'} (${e.country || ''})`,
       value:        (Number(e.dealBasR) || 0).toLocaleString('ko-KR') + '원',
-      changeRate:   Number(e.changeRate)   || 0,
-      changeAmount: Number(e.changeAmount) || 0,
+      changeRate:   Math.round(Number(e.changeRate)*100)/100   || 0,
+      changeAmount: Math.round(Number(e.changeAmount)*100)/100 || 0,
     });
   }
 
