@@ -124,6 +124,68 @@
   height: 280px;
 }
 
+/* 관련 뉴스 */
+.news-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.news-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.news-empty {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.news-card {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  border-left: 3px solid var(--primary);
+}
+
+.news-press {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.news-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.news-title:hover {
+  color: var(--primary);
+}
+
+.news-date {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
 /* 재무제표 */
 .financial-section {
   background: var(--surface);
@@ -290,4 +352,5 @@
   .summary-price .change-row { justify-content: flex-start; }
   .summary-metrics { grid-template-columns: repeat(2, 1fr); }
   .info-grid { grid-template-columns: 1fr; }
+  .news-grid { grid-template-columns: 1fr; }
 }

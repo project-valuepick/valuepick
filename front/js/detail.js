@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     </section>
 
+    <section class="news-section">
+      <h2>관련 뉴스</h2>
+      ${renderNews(stock.news)}
+    </section>
+
     <section class="chart-section">
       <h2>매출 및 수익성 추이 (최근 5년)</h2>
       <div class="chart-legend">
@@ -194,6 +199,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     ], yearLabels);
   });
 });
+
+function renderNews(news) {
+  if (!news || news.length === 0) {
+    return '<p class="news-empty">관련 뉴스가 없습니다.</p>';
+  }
+  return `
+    <div class="news-grid">
+      ${news.slice(0, 6).map((n) => `
+        <article class="news-card">
+          <div class="news-press">${escapeHtml(n.press)}</div>
+          <a class="news-title" href="${escapeHtml(n.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(n.title)}</a>
+          <time class="news-date">${formatNewsDate(n.publishedAt)}</time>
+        </article>
+      `).join('')}
+    </div>
+  `;
+}
 
 function renderTable(title, rows, years) {
   const headerCells = years.map((y) => `<th>${y}</th>`).join('');
