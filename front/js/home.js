@@ -37,10 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 랭킹
   const rankings = [
-    { id: 'rankPer', key: 'per',           title: '📈 저PER 순위',     type: 'lowPer'  },
-    { id: 'rankPbr', key: 'pbr',           title: '📊 저PBR 순위',     type: 'lowPbr'  },
-    { id: 'rankRoe', key: 'roe',           title: '💰 고ROE 순위',     type: 'highRoe' },
-    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'dividendYield' },
+    { id: 'rankPer', key: 'per',           title: '📈 저PER 순위',     type: 'lowPer',        sortParam: 'sort=per&dir=asc'            },
+    { id: 'rankPbr', key: 'pbr',           title: '📊 저PBR 순위',     type: 'lowPbr',        sortParam: 'sort=pbr&dir=asc'            },
+    { id: 'rankRoe', key: 'roe',           title: '💰 고ROE 순위',     type: 'highRoe',       sortParam: 'sort=roe&dir=desc'           },
+    { id: 'rankDiv', key: 'dividendYield', title: '💵 배당수익률 순위', type: 'dividendYield', sortParam: 'sort=dividendYield&dir=desc' },
   ];
 
   // 랭킹 섹션 로딩 표시
@@ -88,13 +88,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const apiResults = [perStocks, pbrStocks, roeStocks, divStocks];
 
-    rankings.forEach(({ id, key, title }, idx) => {
+    rankings.forEach(({ id, key, title, sortParam }, idx) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.innerHTML = `
         <div class="ranking-card">
           <h3>${title}</h3>
           ${buildRankingItems(apiResults[idx], key)}
+          <div class="rank-footer">
+            <a class="rank-more" href="list.html?${sortParam}">더보기+</a>
+          </div>
         </div>
       `;
       bindStockCards(el);

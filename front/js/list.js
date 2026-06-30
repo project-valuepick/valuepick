@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('headerSearch').value = searchQuery;
   }
 
+  const sortParam = params.get('sort');
+  const dirParam  = params.get('dir');
+  if (sortParam) {
+    sortKey = sortParam;
+    sortDir = dirParam === 'asc' ? 'asc' : 'desc';
+  }
+
   const countEl = document.getElementById('stockCount');
   const tableBody = document.getElementById('tableBody');
   const cardList = document.getElementById('cardList');
@@ -30,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const apiParams = { page: currentPage, size: PAGE_SIZE };
       if (searchQuery) apiParams.keyword = searchQuery;
       if (market) apiParams.market = market;
+      if (sortKey) { apiParams.sort = sortKey; apiParams.dir = sortDir; }
       if (filters.perMin != null) apiParams.perMin = filters.perMin;
       if (filters.perMax != null) apiParams.perMax = filters.perMax;
       if (filters.pbrMin != null) apiParams.pbrMin = filters.pbrMin;
@@ -65,10 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (filters[min] != null) result = result.filter((s) => s[key] >= filters[min]);
       if (filters[max] != null) result = result.filter((s) => s[key] <= filters[max]);
     });
-
-    if (sortKey) {
-      result = sortStocks(result, sortKey, sortDir);
-    }
 
     return result;
   }
@@ -126,12 +130,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!el) return;
     if (totalPages <= 1) { el.innerHTML = ''; return; }
 
+    const GROUP = 10;
+    const groupStart = Math.floor(activePage / GROUP) * GROUP;
+    const groupEnd = Math.min(groupStart + GROUP, totalPages);
+
     let html = '';
-    if (activePage > 0) html += `<button class="page-btn" data-page="${activePage-1}">이전</button>`;
-    for (let i = 0; i < totalPages; i++) {
-      html += `<button class="page-btn ${i === activePage ? 'active' : ''}" data-page="${i}">${i+1}</button>`;
+    if (activePage > 0) html += `<button class="page-btn" data-page="${activePage - 1}">이전</button>`;
+    for (let i = groupStart; i < groupEnd; i++) {
+      html += `<button class="page-btn${i === activePage ? ' active' : ''}" data-page="${i}">${i + 1}</button>`;
     }
-    if (activePage < totalPages - 1) html += `<button class="page-btn" data-page="${activePage+1}">다음</button>`;
+    if (activePage < totalPages - 1) html += `<button class="page-btn" data-page="${activePage + 1}">다음</button>`;
 
     el.innerHTML = html;
     el.querySelectorAll('.page-btn[data-page]').forEach(btn => {
@@ -192,9 +200,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     render();
   });
 
-  // 정렬
+  // 정렬 (서버 재조회)
   document.querySelectorAll('.stock-table th[data-sort]').forEach((th) => {
-    th.addEventListener('click', () => {
+    th.addEventListener('click', async () => {
       const key = th.dataset.sort;
       if (sortKey === key) {
         sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -204,6 +212,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       document.querySelectorAll('.stock-table th').forEach((h) => h.classList.remove('sorted'));
       th.classList.add('sorted');
+      currentPage = 0;
+      await loadStocks();
       render();
     });
   });
@@ -211,4 +221,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 초기 데이터 로드 후 렌더링
   await loadStocks();
   render();
+
+  if (sortKey) {
+    const th = document.querySelector(`.stock-table th[data-sort="${sortKey}"]`);
+    if (th) th.classList.add('sorted');
+  }
 });
