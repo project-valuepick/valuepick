@@ -6,7 +6,10 @@ function formatPrice(price) {
 
 function formatMarketCap(cap) {
   if (cap == null) return '-';
-  return Math.round(cap / 10000).toLocaleString('ko-KR') + '만원';
+  else if(Math.round(cap/1000000000000>=1)) return (Math.round((cap  /1000000000000)*10)/10).toLocaleString('ko-KR') + '조원';
+  else if(Math.round(cap/100000000>=1)) return (Math.round((cap  /100000000)*10)/10).toLocaleString('ko-KR') + '억원';
+  else if(cap/10000>=1) return (Math.round((cap / 10000) * 10) / 10).toLocaleString('ko-KR') + '만원';
+  else  return Math.round(cap).toLocaleString('ko-KR') + '원';
 }
 
 function fmt2(v, suffix = '') {
