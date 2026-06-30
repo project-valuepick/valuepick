@@ -89,8 +89,8 @@ async function fetchMarketIndices() {
     result.push({
       name:         k.idxNm || 'KOSPI',
       value:        (Number(k.clsprcIdx) || 0).toLocaleString('ko-KR'),
-      changeRate:   Number(k.flucRt)       || 0,
-      changeAmount: Number(k.cmpprevddIdx) || 0,
+      changeRate:   Math.round(Number(k.flucRt)*100)/100       || 0,
+      changeAmount: Math.round(Number(k.cmpprevddIdx)*100)/100 || 0,
     });
   }
 
@@ -99,8 +99,8 @@ async function fetchMarketIndices() {
     result.push({
       name:         `${e.curUnit || 'USD'} (${e.country || ''})`,
       value:        (Number(e.dealBasR) || 0).toLocaleString('ko-KR') + '원',
-      changeRate:   Number(e.changeRate)   || 0,
-      changeAmount: Number(e.changeAmount) || 0,
+      changeRate:   Math.round(Number(e.changeRate)*100)/100   || 0,
+      changeAmount: Math.round(Number(e.changeAmount)*100)/100 || 0,
     });
   }
 
