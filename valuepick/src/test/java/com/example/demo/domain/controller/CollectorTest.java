@@ -36,7 +36,12 @@ class CollectorTest {
 
     @Test
     public void t2_재무제표수집() {
-        dartFinancialCollector.collect("2025", "11011");
+        dartFinancialCollector.collect("2025", "11011"); // 3개년 한번에 저장
+    }
+
+    @Test
+    public void t2_1_재무제표수집_1개년() {
+        dartFinancialCollector.collectCurrentOnly("2025", "11011"); // 1개년만 (나중에 스캐줄용)
     }
 
     @Test
@@ -46,18 +51,20 @@ class CollectorTest {
 
     @Test
     public void t4_주가수집() {
-        LocalDate date = LocalDate.of(2026, 6,23);
-        stockPriceCollector.collect(date, date);
+        LocalDate date = LocalDate.of(2026, 6,22);
+        LocalDate dateEnd = LocalDate.of(2026, 6,26);
+//        stockPriceCollector.collect(date, date);
+        stockPriceCollector.collect(date, dateEnd);
     }
 
     @Test
     public void t5_환율수집() {
-        exchangeRateApiService.fetchAndSaveExchangeRates("20260623");
+        exchangeRateApiService.fetchAndSaveExchangeRates("20260625");
     }
 
     @Test
     public void t6_코스피지수수집() {
-        marketIndexService.fetchAndSave("20260623");
+        marketIndexService.fetchAndSave("20260625");
     }
 
     @Test
