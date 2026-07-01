@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     <section class="news-section">
       <h2>관련 뉴스</h2>
-      ${renderNews(stock.news)}
+      <div id="newsContainer">${renderNews(stock.news, 0, stock.newsTotalPages)}</div>
     </section>
 
     <section class="chart-section">
@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="financial-block">
         <h3>회사 정보</h3>
         <div class="info-grid">
-          <div class="info-card"><div class="label">회사이름</div><div class="value">${formatPrice(stock.price)}</div></div>
-          <div class="info-card"><div class="label">대표이름</div><div class="value">${formatMarketCap(stock.marketCap)}</div></div>
+          <div class="info-card"><div class="label">회사이름</div><div class="value">${stock.name}</div></div>
+          <div class="info-card"><div class="label">대표이름</div><div class="value">${'-'}</div></div>
           <div class="info-card"><div class="label">상장일</div><div class="value">${'-'}</div></div>
           <div class="info-card"><div class="label">업종구분</div><div class="value">${stock.sector}</div></div>
           <div class="info-card"><div class="label">시장구분</div><div class="value">${stock.market}</div></div>
@@ -161,6 +161,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('backBtn').addEventListener('click', () => history.back());
 
+  bindNewsPagination(code);
+
   // 탭
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -200,13 +202,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-function renderNews(news) {
+function renderNews(news, page, totalPages) {
   if (!news || news.length === 0) {
     return '<p class="news-empty">관련 뉴스가 없습니다.</p>';
   }
   return `
     <div class="news-grid">
-      ${news.slice(0, 6).map((n) => `
+      ${news.map((n) => `
         <article class="news-card">
           <div class="news-press">${escapeHtml(n.press)}</div>
           <a class="news-title" href="${escapeHtml(n.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(n.title)}</a>
@@ -214,7 +216,30 @@ function renderNews(news) {
         </article>
       `).join('')}
     </div>
+    ${renderNewsPagination(page, totalPages)}
   `;
+}
+
+function renderNewsPagination(page, totalPages) {
+  if (!totalPages || totalPages <= 1) return '';
+  return `
+    <div class="news-pagination">
+      <button class="news-page-btn" data-page="${page - 1}" ${page <= 0 ? 'disabled' : ''}>이전</button>
+      <span class="news-page-info">${page + 1} / ${totalPages}</span>
+      <button class="news-page-btn" data-page="${page + 1}" ${page >= totalPages - 1 ? 'disabled' : ''}>다음</button>
+    </div>
+  `;
+}
+
+function bindNewsPagination(code) {
+  const container = document.getElementById('newsContainer');
+  container.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.news-page-btn');
+    if (!btn || btn.disabled) return;
+    const page = Number(btn.dataset.page);
+    const newsPage = await fetchStockNews(code, page);
+    container.innerHTML = renderNews(newsPage.content, newsPage.number, newsPage.totalPages);
+  });
 }
 
 function renderTable(title, rows, years) {

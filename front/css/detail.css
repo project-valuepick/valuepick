@@ -186,6 +186,40 @@
   color: var(--text-sub);
 }
 
+.news-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.news-page-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.news-page-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.news-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.news-page-info {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
 /* 재무제표 */
 .financial-section {
   background: var(--surface);
