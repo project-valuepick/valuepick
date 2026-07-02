@@ -2,16 +2,26 @@ package com.example.demo.domain.service;
 
 import com.example.demo.domain.dto.ExchangeDto;
 import com.example.demo.domain.dto.MarketIndexDto;
+import com.example.demo.domain.dto.naverPolling.Data;
+import com.example.demo.domain.dto.naverPolling.Root;
 import com.example.demo.domain.entity.Exchange;
 import com.example.demo.domain.entity.MarketIndex;
 import com.example.demo.domain.repository.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +29,8 @@ import java.util.Map;
 
 @Service
 public class SimpleInfoServiceImpl implements SimpleInfoService {
+    private static final Logger log = LoggerFactory.getLogger(SimpleInfoServiceImpl.class);
+    private String naver_api = "https://polling.finance.naver.com/api/realtime";
 
     @Autowired StockIndicatorRepository indicatorRepository;
     @Autowired MarketIndexRepository    marketIndexRepository;
@@ -40,6 +52,43 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
                     WHERE sp2.srtn_cd = c.stock_code
                 )
             """;
+    // ── api 요청 ─────────────────────────────────────────────────
+    private Data naver_api_get(String stock_code) throws JsonProcessingException {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(naver_api)
+                .queryParam(
+                        "query",
+                        "SERVICE_POPULAR_ITEM:"+stock_code
+                )
+                .build()
+                .toUri();
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149.0.0.0 Safari/537.36");
+        headers.set("Referer",
+                "https://finance.naver.com/");
+        headers.setAccept(List.of(MediaType.ALL));
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response =
+                restTemplate.exchange(
+                        uri,
+                        HttpMethod.GET,
+                        entity,
+                        String.class
+                );
+        ObjectMapper mapper = new ObjectMapper();
+
+        Root root = mapper.readValue(
+                response.getBody(),
+                Root.class
+        );
+
+        return root.getResult().getAreas().get(0).getDatas().get(0);
+
+    }
 
     // ── 정렬 헬퍼 ─────────────────────────────────────────────────
     private String toDbColumn(String key) {
@@ -59,6 +108,19 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
         return " ORDER BY " + col + " " + ("asc".equalsIgnoreCase(dir) ? "ASC" : "DESC");
     }
 
+    // ── 실시간 현재가/등락률 (API 실패 시 DB 값으로 폴백) ─────────────
+    private void putRealtimePrice(Map<String, Object> m, String stockCode, Object dbMkp, Object dbFltRt) {
+        try {
+            Data data = naver_api_get(stockCode);
+            m.put("mkp",    data.getNv());
+            m.put("flt_rt", (data.getRf().equals("2") ? data.getCr() * -1 : data.getRf().equals("5") ? data.getCr() : 0));
+        } catch (Exception e) {
+            log.warn("네이버 실시간 시세 조회 실패 - stock_code={}, DB 값으로 대체: {}", stockCode, e.toString());
+            m.put("mkp",    dbMkp);
+            m.put("flt_rt", dbFltRt);
+        }
+    }
+
     // ── 결과 행 → Map ──────────────────────────────────────────────
     private Map<String, Object> rowToMap(Object[] row) {
         Map<String, Object> m = new HashMap<>();
@@ -68,8 +130,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
         m.put("roe",            row[3]);
         m.put("pbr",            row[4]);
         m.put("dividend_yield", row[5]);
-        m.put("mkp",            row[6]);
-        m.put("flt_rt",         row[7]);
+        putRealtimePrice(m, row[0].toString(), row[6], row[7]);
         m.put("mrkt_tot_amt",   row[8]);
         return m;
     }
@@ -144,7 +205,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("stock_code", row[0]); m.put("corp_name", row[1]);
             m.put("per", row[2]);       m.put("roe", row[3]);
             m.put("pbr", row[4]);       m.put("dividend_yield", row[5]);
-            m.put("mkp", row[6]);       m.put("flt_rt", row[7]);
+            putRealtimePrice(m, row[0].toString(), row[6], row[7]);
             m.put("mrkt_tot_amt", row[8]); m.put("score", row[9]);
             list.add(m);
         }
@@ -163,7 +224,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
             m.put("stock_code", row[0]); m.put("corp_name", row[1]);
             m.put("per", row[2]);       m.put("roe", row[3]);
             m.put("pbr", row[4]);       m.put("dividend_yield", row[5]);
-            m.put("mkp", row[6]);       m.put("flt_rt", row[7]);
+            putRealtimePrice(m, row[0].toString(), row[6], row[7]);
             m.put("mrkt_tot_amt", row[8]); m.put("score", row[9]);
             list.add(m);
         }
@@ -273,3 +334,5 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
         return result;
     }
 }
+
+
