@@ -186,12 +186,37 @@ button {
 
 /* ── Stock card (shared) ── */
 .stock-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
   cursor: pointer;
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+/* ── 관심종목 별 버튼 (카드/랭킹/상세 공통) ── */
+.favorite-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--border);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.favorite-btn:hover {
+  color: #f0b429;
+}
+
+.favorite-btn.active {
+  color: #f0b429;
 }
 
 .stock-card:hover {

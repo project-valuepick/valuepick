@@ -5,7 +5,7 @@ function renderHeader(activePage) {
     { href: 'index.html', label: '홈', key: 'home' },
     { href: 'list.html', label: '종목리스트', key: 'list' },
     { href: 'rank.html', label: '랭킹', key: 'ranking' },
-    { href: '#', label: '관심종목', key: 'watchlist' },
+    { href: 'favorites.html', label: '관심종목', key: 'watchlist' },
   ];
 
   const navHtml = navItems
@@ -73,11 +73,69 @@ function goToDetail(code) {
   window.location.href = `detail.html?code=${code}`;
 }
 
+// ──────────────────────────────────────────────
+// 관심종목 상태 (페이지 로드 시 loadFavoriteState로 한 번 채워서 캐싱)
+// ──────────────────────────────────────────────
+
+let _favoriteCodes = new Set();
+
+function isFavorite(code) {
+  return _favoriteCodes.has(code);
+}
+
+async function loadFavoriteState() {
+  if (!localStorage.getItem('accessToken')) {
+    _favoriteCodes = new Set();
+    return;
+  }
+  try {
+    const favorites = await fetchFavorites();
+    _favoriteCodes = new Set(favorites.map((s) => s.code));
+  } catch (e) {
+    _favoriteCodes = new Set();
+  }
+}
+
+// onDone(code, active) - 토글이 서버까지 반영된 후 호출되는 콜백 (선택)
+async function toggleFavorite(code, btn, onDone) {
+  if (!localStorage.getItem('accessToken')) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const wasActive = isFavorite(code);
+  try {
+    if (wasActive) {
+      await removeFavorite(code);
+      _favoriteCodes.delete(code);
+    } else {
+      await addFavorite(code);
+      _favoriteCodes.add(code);
+    }
+    if (btn) {
+      btn.classList.toggle('active', !wasActive);
+      btn.setAttribute('aria-label', `관심종목 ${!wasActive ? '해제' : '추가'}`);
+    }
+    onDone?.(code, !wasActive);
+  } catch (e) {
+    console.error('관심종목 처리 실패:', e);
+  }
+}
+
+function bindFavoriteButtons(container, onDone) {
+  container?.querySelectorAll('.favorite-btn[data-favorite-code]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(btn.dataset.favoriteCode, btn, onDone);
+    });
+  });
+}
+
 function renderStockCard(stock, rank) {
   const cls = changeClass(stock.changeRate);
   const rankBadge = rank != null
     ? `<span class="rank-num${rank <= 3 ? ' top3' : ''}" style="margin-right:10px;flex-shrink:0">${rank}</span>`
     : '';
+  const active = isFavorite(stock.code);
   return `
     <article class="stock-card" data-code="${stock.code}" role="button" tabindex="0" aria-label="${stock.name} 상세 보기">
       <div class="stock-card-header">
@@ -89,6 +147,7 @@ function renderStockCard(stock, rank) {
           </div>
         </div>
         <div class="stock-price-wrap">
+          <button class="favorite-btn${active ? ' active' : ''}" data-favorite-code="${stock.code}" type="button" aria-label="관심종목 ${active ? '해제' : '추가'}">★</button>
           <div class="stock-price">${formatPrice(stock.price)}</div>
           <div class="stock-change ${cls}">${formatChange(stock.changeRate)}</div>
         </div>
@@ -104,7 +163,8 @@ function renderStockCard(stock, rank) {
   `;
 }
 
-function bindStockCards(container) {
+function bindStockCards(container, onFavoriteDone) {
+  bindFavoriteButtons(container, onFavoriteDone);
   container?.querySelectorAll('.stock-card, .rank-item[data-code]').forEach((el) => {
     const code = el.dataset.code;
     el.addEventListener('click', () => goToDetail(code));
