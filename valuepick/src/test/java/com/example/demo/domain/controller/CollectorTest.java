@@ -67,6 +67,7 @@ class CollectorTest {
         exchangeRateApiService.fetchAndSaveExchangeRates("20260701"); // 어제 기준
     }
 
+    
     @Test
     public void t6_코스피지수수집() {
         marketIndexService.fetchAndSave("20260701"); // 어제 기준
