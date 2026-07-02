@@ -198,8 +198,8 @@ button {
 /* ── 관심종목 별 버튼 (카드/랭킹/상세 공통) ── */
 .favorite-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  left: 12px;
   width: 28px;
   height: 28px;
   border: none;
@@ -230,6 +230,7 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
+  padding-top: 24px;
 }
 
 .stock-name {

@@ -138,6 +138,7 @@ function renderStockCard(stock, rank) {
   const active = isFavorite(stock.code);
   return `
     <article class="stock-card" data-code="${stock.code}" role="button" tabindex="0" aria-label="${stock.name} 상세 보기">
+      <button class="favorite-btn${active ? ' active' : ''}" data-favorite-code="${stock.code}" type="button" aria-label="관심종목 ${active ? '해제' : '추가'}">★</button>
       <div class="stock-card-header">
         <div style="display:flex;align-items:center">
           ${rankBadge}
@@ -147,7 +148,6 @@ function renderStockCard(stock, rank) {
           </div>
         </div>
         <div class="stock-price-wrap">
-          <button class="favorite-btn${active ? ' active' : ''}" data-favorite-code="${stock.code}" type="button" aria-label="관심종목 ${active ? '해제' : '추가'}">★</button>
           <div class="stock-price">${formatPrice(stock.price)}</div>
           <div class="stock-change ${cls}">${formatChange(stock.changeRate)}</div>
         </div>

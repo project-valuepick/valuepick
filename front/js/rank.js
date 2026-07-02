@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.setAttribute('tabindex', '0');
       card.setAttribute('aria-label', `${s.name} 상세 보기`);
       card.innerHTML = `
+        <button class="favorite-btn${isFavorite(s.code) ? ' active' : ''}" data-favorite-code="${s.code}" type="button" aria-label="관심종목 ${isFavorite(s.code) ? '해제' : '추가'}">★</button>
         <div class="rank-card-header">
           <span class="${rankClass(rank)}">${rank}</span>
           <div class="rank-card-info">
@@ -64,7 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         </div>
         <div class="rank-card-price">
-          <button class="favorite-btn${isFavorite(s.code) ? ' active' : ''}" data-favorite-code="${s.code}" type="button" aria-label="관심종목 ${isFavorite(s.code) ? '해제' : '추가'}">★</button>
           <span class="stock-price">${formatPrice(s.price)}</span>
           <span class="stock-change ${cls}">${formatChange(s.changeRate)}</span>
         </div>
