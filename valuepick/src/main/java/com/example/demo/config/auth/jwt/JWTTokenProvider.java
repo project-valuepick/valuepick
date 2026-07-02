@@ -92,11 +92,13 @@ public class JWTTokenProvider {
             authorities.add(new SimpleGrantedAuthority(role));
         }
 
-        if (!userRepository.existsByEmail(username)) {
+        User user = userRepository.findByEmail(username).orElse(null);
+        if (user == null) {
             return null;
         }
 
         UserDto userDto = UserDto.builder()
+                .id(user.getId())
                 .email(username)
                 .role(UserRole.valueOf(auth.replace("ROLE_", "")))
                 .build();
