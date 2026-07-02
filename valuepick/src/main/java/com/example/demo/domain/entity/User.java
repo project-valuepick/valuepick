@@ -41,4 +41,14 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
