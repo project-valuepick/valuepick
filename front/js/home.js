@@ -22,18 +22,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     marketGrid.innerHTML = '';
   }
 
-  // 주요 종목
+  // 주요 종목 (TOP10) — 10초마다 현재가/등락률 갱신
   const stocksGrid = document.getElementById('stocksGrid');
 
-  try {
-    stocksGrid.innerHTML = '<div>로딩 중...</div>';
-    const stocks = await fetchFeaturedStocks();
-    stocksGrid.innerHTML = stocks.map((s, i) => renderStockCard(s, i + 1)).join('');
-    bindStockCards(stocksGrid);
-  } catch (err) {
-    console.error('fetchFeaturedStocks 실패:', err);
-    stocksGrid.innerHTML = '';
+  async function loadFeaturedStocks(isFirst) {
+    if (isFirst) stocksGrid.innerHTML = '<div>로딩 중...</div>';
+    try {
+      const stocks = await fetchFeaturedStocks();
+      stocksGrid.innerHTML = stocks.map((s, i) => renderStockCard(s, i + 1)).join('');
+      bindStockCards(stocksGrid);
+    } catch (err) {
+      console.error('fetchFeaturedStocks 실패:', err);
+      if (isFirst) stocksGrid.innerHTML = '';
+    }
   }
+
+  await loadFeaturedStocks(true);
+  setInterval(() => loadFeaturedStocks(false), 10000);
 
   // 랭킹
   const rankings = [

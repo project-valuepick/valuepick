@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let hasNext = true;
   let loading = false;
   let totalLoaded = 0;
+  const rowRefs = new Map(); // code -> { priceCell, changeCell, cardPriceEl, cardChangeEl }
 
   function rankClass(rank) {
     if (rank <= 3) return 'rank-num top3';
@@ -43,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       tr.addEventListener('click', () => goToDetail(s.code));
       tableBody.appendChild(tr);
+      const priceCell  = tr.children[2];
+      const changeCell = tr.children[3];
 
       const card = document.createElement('article');
       card.className = 'rank-card';
@@ -79,7 +82,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToDetail(s.code); }
       });
       cardList.appendChild(card);
+
+      rowRefs.set(s.code, {
+        priceCell,
+        changeCell,
+        cardPriceEl:  card.querySelector('.stock-price'),
+        cardChangeEl: card.querySelector('.stock-change'),
+      });
     });
+  }
+
+  // 이미 로드된 페이지들의 현재가/등락률만 10초마다 갱신 (스크롤 위치 유지)
+  async function refreshPrices() {
+    if (currentPage === 0) return;
+    try {
+      const pages = await Promise.all(
+        Array.from({ length: currentPage }, (_, p) =>
+          fetch(`${API_BASE}/info/top100?page=${p}&size=${PAGE_SIZE}`).then((r) => (r.ok ? r.json() : null))
+        )
+      );
+      pages.forEach((body) => {
+        if (!body) return;
+        (body.list || []).forEach((raw) => {
+          const s = normalizeStock(raw);
+          const refs = rowRefs.get(s.code);
+          if (!refs) return;
+          const cls = changeClass(s.changeRate);
+          refs.priceCell.textContent = formatPrice(s.price);
+          refs.changeCell.textContent = formatChange(s.changeRate);
+          refs.changeCell.className = cls;
+          refs.cardPriceEl.textContent = formatPrice(s.price);
+          refs.cardChangeEl.textContent = formatChange(s.changeRate);
+          refs.cardChangeEl.className = `stock-change ${cls}`;
+        });
+      });
+    } catch (e) {
+      console.error('가격 갱신 실패:', e);
+    }
   }
 
   async function loadMore() {
@@ -123,4 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { rootMargin: '200px' });
 
   observer.observe(sentinel);
+
+  setInterval(refreshPrices, 10000);
 });
