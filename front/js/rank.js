@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const stocks = (body.list || []).map((s) => ({
         ...normalizeStock(s),
-        score: s.score != null ? Number(s.score) : null,
+        score: s.score != null ? (Math.round(Number(s.score)*1000))/10 : null,
       }));
 
       const startRank = currentPage * PAGE_SIZE + 1;
