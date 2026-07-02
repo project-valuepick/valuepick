@@ -58,6 +58,14 @@ function sortStocks(stocks, key, dir) {
 
 const API_BASE = "http://localhost:8080";
 
+// 로그인 토큰을 Authorization 헤더에 실어 보내는 fetch 래퍼 (관심종목 등 인증 필요 API용)
+function authFetch(url, options = {}) {
+  const token = localStorage.getItem('accessToken');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(url, { ...options, headers });
+}
+
 // 목록 전체 필드 정규화 (/info/list, /info/list/filter, /info/search)
 function normalizeStock(s) {
   return {
@@ -286,4 +294,25 @@ async function fetchStockFull(code) {
     epsHistory:  years.map(() => 0),
     bpsHistory:  years.map(() => 0),
   };
+}
+
+// ──────────────────────────────────────────────
+// 관심종목 (로그인 필요)
+// ──────────────────────────────────────────────
+
+async function fetchFavorites() {
+  const res = await authFetch(`${API_BASE}/api/favorites`);
+  if (!res.ok) throw new Error(`fetchFavorites failed: ${res.status}`);
+  const data = await res.json();
+  return data.map(normalizeStock);
+}
+
+async function addFavorite(stockCode) {
+  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`addFavorite failed: ${res.status}`);
+}
+
+async function removeFavorite(stockCode) {
+  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`removeFavorite failed: ${res.status}`);
 }
