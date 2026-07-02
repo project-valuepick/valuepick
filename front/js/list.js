@@ -31,8 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const resetFilterBtn = document.getElementById('resetFilterBtn');
 
   // API에서 종목 목록 가져오기 (keyword, market 파라미터 지원)
-  async function loadStocks({ market } = {}) {
-    tableBody.innerHTML = `<tr><td colspan="8"><div class="empty-state">종목 데이터를 불러오는 중...</div></td></tr>`;
+  async function loadStocks({ market, background } = {}) {
+    if (!background) {
+      tableBody.innerHTML = `<tr><td colspan="8"><div class="empty-state">종목 데이터를 불러오는 중...</div></td></tr>`;
+    }
     try {
       const apiParams = { page: currentPage, size: PAGE_SIZE };
       if (searchQuery) apiParams.keyword = searchQuery;
@@ -158,6 +160,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderPagination(_totalPages, currentPage);
   }
 
+  // 현재가/등락률만 in-place로 갱신 (테이블 전체를 다시 그리지 않아 깜빡임 없음)
+  // 대상 행/카드가 하나라도 없으면(페이지 구성이 바뀐 경우) false를 반환해 전체 재렌더링으로 폴백
+  function patchPrices(data) {
+    for (const s of data) {
+      const row = tableBody.querySelector(`tr[data-code="${s.code}"]`);
+      const card = cardList.querySelector(`.stock-card[data-code="${s.code}"]`);
+      if (!row || !card) return false;
+
+      const cls = changeClass(s.changeRate);
+      row.children[1].textContent = formatPrice(s.price);
+      row.children[2].textContent = formatChange(s.changeRate);
+      row.children[2].className = cls;
+
+      const priceEl = card.querySelector('.stock-price');
+      const changeEl = card.querySelector('.stock-change');
+      if (priceEl) priceEl.textContent = formatPrice(s.price);
+      if (changeEl) {
+        changeEl.textContent = formatChange(s.changeRate);
+        changeEl.className = `stock-change ${cls}`;
+      }
+    }
+    return true;
+  }
+
   // 필터 토글
   filterBtn.addEventListener('click', () => {
     filterPanel.classList.toggle('open');
@@ -226,4 +252,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const th = document.querySelector(`.stock-table th[data-sort="${sortKey}"]`);
     if (th) th.classList.add('sorted');
   }
+
+  // 10초마다 현재가/등락률 갱신을 위해 재조회 (배경 재조회 — 로딩 표시/전체 재렌더링 없이 패치)
+  setInterval(async () => {
+    await loadStocks({ background: true });
+    const filtered = applyFilters();
+    if (!patchPrices(filtered)) render();
+  }, 10000);
 });

@@ -1,11 +1,29 @@
 /** 공통 헤더, 검색, 유틸리티 */
 
+function safeStorageGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    return null;
+  }
+}
+
+function safeStorageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    // ignore storage failures in restricted contexts
+  }
+}
+
 function renderHeader(activePage) {
   const navItems = [
     { href: 'index.html', label: '홈', key: 'home' },
     { href: 'list.html', label: '종목리스트', key: 'list' },
     { href: 'rank.html', label: '랭킹', key: 'ranking' },
-    { href: '#', label: '관심종목', key: 'watchlist' },
+    { href: 'investment-journal.html', label: '투자일지', key: 'journal' },
+    { href: 'community.html', label: '커뮤니티', key: 'community' },
+    { href: 'admin.html', label: '관리자', key: 'admin' },
   ];
 
   const navHtml = navItems
@@ -32,7 +50,7 @@ function renderHeader(activePage) {
             </svg>
             <input type="text" class="search-input" id="headerSearch" placeholder="종목명 또는 종목코드 검색" aria-label="종목 검색" />
           </div>
-          ${localStorage.getItem('accessToken')
+          ${safeStorageGet('accessToken')
             ? `<button class="btn-text" id="logoutBtn">로그아웃</button>`
             : `<a class="btn-text" href="login.html">로그인</a><a class="btn-primary" href="register.html">회원가입</a>`
           }
@@ -53,8 +71,8 @@ function initHeader(activePage) {
   toggle?.addEventListener('click', () => nav?.classList.toggle('open'));
 
   document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    safeStorageRemove('accessToken');
+    safeStorageRemove('refreshToken');
     window.location.href = 'login.html';
   });
 
