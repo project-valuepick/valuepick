@@ -26,6 +26,17 @@ public class Company {
     @Column(name = "corp_cls", columnDefinition = "CHAR(1)")
     private String corpCls;
 
+    // DART company.json의 induty_code (표준산업분류코드, 예: 삼성전자 "264") - 업종명은 API 미제공
+    @Column(name = "induty_code", length = 10)
+    private String indutyCode;
+
+    // induty_code 앞 2자리(KSIC 중분류)를 DartCompanyCollector의 매핑표로 변환한 값
+    @Column(name = "induty_nm")
+    private String indutyNm;
+
+    @Column(name = "ceo_nm")
+    private String ceoNm;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -49,4 +60,12 @@ public class Company {
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UserFavorite> userFavorites;
+
+    // DartCompanyCollector 5단계에서 DART company.json 조회 후 업종코드·업종명·대표자명 반영할 때 사용
+    public void setIndustryInfo(String indutyCode, String indutyNm, String ceoNm) {
+        this.indutyCode = indutyCode;
+        this.indutyNm = indutyNm;
+        this.ceoNm = ceoNm;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
