@@ -87,7 +87,7 @@ function normalizeRankStock(s) {
     pbr:           s.pbr            != null ? Number(s.pbr)            : null,
     roe:           s.roe            != null ? Number(s.roe)            : null,
     dividendYield: s.dividend_yield != null ? Number(s.dividend_yield) : null,
-    score:         s.score          != null ? Number(s.score)          : null,
+    score:         s.score          != null ? (Math.round(Number(s.score)*1000))/10          : null,
   };
 }
 
