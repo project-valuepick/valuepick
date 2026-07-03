@@ -151,10 +151,13 @@
 
 .modal {
   width: min(640px, 100%);
+  max-height: 90vh;
   background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-head {
@@ -163,6 +166,78 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.action-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.detail-block {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fafbfc;
+}
+
+.detail-block:first-child {
+  margin-top: 0;
+}
+
+.detail-block h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+}
+
+.detail-block p {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.detail-block p:last-child {
+  margin-bottom: 0;
+}
+
+.vote-inline button.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.inline-comment-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.comment-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fafbfc;
+}
+
+.comment-item .row {
+  color: var(--text-sub);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.inline-comment-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.inline-comment-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
 }
 
 .icon-btn {
