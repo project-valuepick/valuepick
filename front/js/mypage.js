@@ -1,0 +1,189 @@
+document.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('accessToken')) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  initHeader('');
+  initMenu();
+  loadProfile();
+  initProfileForm();
+  initPasswordForm();
+  initLogout();
+  initWithdraw();
+});
+
+// ── 메뉴 전환 ──────────────────────────────────────
+function initMenu() {
+  const items = document.querySelectorAll('.side-nav-item[data-menu]');
+  const sections = {
+    watchlist: document.getElementById('section-watchlist'),
+    journal:   document.getElementById('section-journal'),
+    profile:   document.getElementById('section-profile'),
+    password:  document.getElementById('section-password'),
+  };
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      items.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+
+      Object.values(sections).forEach(s => s.style.display = 'none');
+      sections[item.dataset.menu].style.display = 'block';
+    });
+  });
+}
+
+// ── 프로필 불러오기 ────────────────────────────────
+async function loadProfile() {
+  const res = await authFetch('/api/users/me');
+  if (!res) return;
+
+  const data = await res.json();
+
+  const initial = (data.nickname || data.email || '?')[0].toUpperCase();
+  document.getElementById('profileAvatar').textContent = initial;
+  document.getElementById('profileNickname').textContent = data.nickname;
+  document.getElementById('profileEmail').textContent = data.email;
+  document.getElementById('profileSince').textContent =
+    '가입일 : ' + data.createdAt.slice(0, 10).replace(/-/g, '. ');
+
+  const nicknameInput = document.getElementById('nicknameInput');
+  nicknameInput.value = data.nickname;
+  document.getElementById('emailInput').value = data.email;
+  document.getElementById('nicknameCount').textContent = `${data.nickname.length}/20자`;
+}
+
+// ── 프로필 수정 ────────────────────────────────────
+function initProfileForm() {
+  const nicknameInput = document.getElementById('nicknameInput');
+  nicknameInput.addEventListener('input', () => {
+    document.getElementById('nicknameCount').textContent = `${nicknameInput.value.length}/20자`;
+  });
+
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) return;
+
+    const btn = document.getElementById('profileSaveBtn');
+    btn.disabled = true;
+
+    const res = await authFetch('/api/users/me', {
+      method: 'PUT',
+      body: JSON.stringify({ nickname }),
+    });
+    if (!res) return;
+
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('profileNickname').textContent = data.nickname;
+      document.getElementById('profileAvatar').textContent = data.nickname[0].toUpperCase();
+      showAlert('profileAlert', 'profileAlertMsg', '닉네임이 변경되었습니다.', 'success');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showAlert('profileAlert', 'profileAlertMsg', data.message || '저장에 실패했습니다.', 'error');
+    }
+
+    btn.disabled = false;
+  });
+}
+
+// ── 비밀번호 변경 ──────────────────────────────────
+function initPasswordForm() {
+  const newPw = document.getElementById('newPassword');
+  const confirmPw = document.getElementById('confirmPassword');
+  const confirmError = document.getElementById('confirmError');
+
+  confirmPw.addEventListener('input', () => {
+    if (confirmPw.value && newPw.value !== confirmPw.value) {
+      confirmError.textContent = '비밀번호가 일치하지 않습니다.';
+      confirmError.classList.add('visible');
+    } else {
+      confirmError.classList.remove('visible');
+    }
+  });
+
+  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = newPw.value;
+    const confirmPassword = confirmPw.value;
+
+    if (newPassword !== confirmPassword) return;
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+      showAlert('passwordAlert', 'passwordAlertMsg', '비밀번호는 영문+숫자 조합 8자 이상이어야 합니다.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('passwordSaveBtn');
+    btn.disabled = true;
+
+    const res = await authFetch('/api/users/me/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!res) return;
+
+    if (res.ok) {
+      showAlert('passwordAlert', 'passwordAlertMsg', '비밀번호가 변경되었습니다.', 'success');
+      document.getElementById('passwordForm').reset();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showAlert('passwordAlert', 'passwordAlertMsg', data.message || '변경에 실패했습니다.', 'error');
+    }
+
+    btn.disabled = false;
+  });
+}
+
+// ── 로그아웃 ───────────────────────────────────────
+function initLogout() {
+  document.getElementById('logoutSideBtn').addEventListener('click', () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = 'login.html';
+  });
+}
+
+// ── 회원탈퇴 ───────────────────────────────────────
+function initWithdraw() {
+  const modal = document.getElementById('withdrawModal');
+
+  document.getElementById('withdrawBtn').addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+
+  document.getElementById('withdrawCancelBtn').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // 바깥 클릭 시 닫기
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  document.getElementById('withdrawConfirmBtn').addEventListener('click', async () => {
+    const res = await authFetch('/api/users/me', { method: 'DELETE' });
+    if (!res) return;
+
+    if (res.ok) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = 'index.html';
+    }
+  });
+}
+
+// ── 폼 결과 알림 표시 ──────────────────────────────
+// 확인 버튼 클릭(onclick="hideAlert") 또는 3초 후 자동 사라짐
+function showAlert(alertId, msgId, message, type) {
+  const el = document.getElementById(alertId);
+  document.getElementById(msgId).textContent = message;
+  el.className = `alert ${type} visible`;
+  setTimeout(() => hideAlert(alertId), 3000);
+}
+
+function hideAlert(alertId) {
+  document.getElementById(alertId).classList.remove('visible');
+}

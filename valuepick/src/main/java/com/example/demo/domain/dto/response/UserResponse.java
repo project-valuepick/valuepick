@@ -1,6 +1,7 @@
 package com.example.demo.domain.dto.response;
 
 import com.example.demo.domain.entity.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,8 @@ public class UserResponse {
     private final Long id;
     private final String email;
     private final String nickname;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private final LocalDateTime createdAt;
 
     public UserResponse(User user) {
