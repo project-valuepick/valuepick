@@ -170,7 +170,11 @@ function initWithdraw() {
     if (res.ok) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      window.location.href = 'index.html';
+      modal.style.display = 'none';
+
+      const msg = document.getElementById('withdrawDoneMsg');
+      msg.style.display = 'flex';
+      setTimeout(() => { window.location.href = 'index.html'; }, 2500);
     }
   });
 }
