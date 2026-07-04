@@ -28,5 +28,5 @@ public class Top100 {
     @JoinColumn(name = "stock_code", insertable = false, updatable = false)
     private Company company;
 
-    private Integer score;
+    private Double score;
 }
