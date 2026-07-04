@@ -83,6 +83,43 @@ async function authFetch(url, options = {}) {
   });
 
   if (res.status === 401) {
+    const body = await res.json().catch(() => ({}));
+
+    if (body.error === 'ACCESS_TOKEN_EXPIRED') {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        localStorage.removeItem('accessToken');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const refreshRes = await fetch(base + '/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!refreshRes.ok) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { accessToken, refreshToken: newRefreshToken } = await refreshRes.json();
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+
+      return fetch(base + url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+      });
+    }
+
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     window.location.href = 'login.html';
