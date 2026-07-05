@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -24,13 +23,9 @@ public class PrincipalDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("PrincipalDetailsService loadUserByUsername: {}", email);
 
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email + " 존재하지 않는 계정입니다."));
 
-        if (userOptional.isEmpty()) {
-            throw new UsernameNotFoundException(email + " 존재하지 않는 계정입니다.");
-        }
-
-        User user = userOptional.get();
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())

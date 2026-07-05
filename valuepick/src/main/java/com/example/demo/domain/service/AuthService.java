@@ -52,6 +52,10 @@ public class AuthService {
 
     @Transactional
     public TokenInfo login(String email, String password) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.isDeleted()) throw new IllegalArgumentException("탈퇴한 계정입니다.");
+        });
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );

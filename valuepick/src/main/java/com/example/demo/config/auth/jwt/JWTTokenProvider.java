@@ -92,7 +92,7 @@ public class JWTTokenProvider {
             authorities.add(new SimpleGrantedAuthority(role));
         }
 
-        if (!userRepository.existsByEmail(username)) {
+        if (!userRepository.existsByEmailAndDeletedAtIsNull(username)) {
             return null;
         }
 
@@ -119,11 +119,11 @@ public class JWTTokenProvider {
 
     // RefreshToken 재발급 시 email로 직접 토큰 생성
     public TokenInfo generateTokenByEmail(String email) {
-        if (!userRepository.existsByEmail(email)) {
+        if (!userRepository.existsByEmailAndDeletedAtIsNull(email)) {
             return null;
         }
 
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email).get();
         String authority = "ROLE_" + user.getRole().name();
 
         long now = new Date().getTime();
