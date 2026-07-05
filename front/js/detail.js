@@ -69,21 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     </section>
 
-    <section class="news-section">
-      <h2>관련 뉴스</h2>
-      <div id="newsContainer">${renderNews(stock.news, 0, stock.newsTotalPages)}</div>
-    </section>
-
-    <section class="chart-section">
-      <h2>매출 및 수익성 추이 (최근 5년)</h2>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#3182f6"></span>매출액</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#00c471"></span>영업이익</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#f04452"></span>순이익</span>
-      </div>
-      <canvas class="chart-canvas" id="revenueChart"></canvas>
-    </section>
-
     <section class="financial-section">
       <h2>재무제표 상세</h2>
 
@@ -117,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="tab-header" role="tablist">
           <button class="tab-btn active" role="tab" data-tab="income">손익계산서</button>
           <button class="tab-btn" role="tab" data-tab="balance">재무상태표</button>
-          <button class="tab-btn" role="tab" data-tab="indicator">투자지표</button>
+          <button class="tab-btn" role="tab" data-tab="revenue">수익 추이</button>
         </div>
 
         <div class="tab-panel active" id="tab-income" role="tabpanel">
@@ -135,14 +120,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             { label: '부채비율(%)', data: stock.debtRatioHistory, suffix: '%' },
           ], stock.years || YEARS)}
         </div>
-        <div class="tab-panel" id="tab-indicator" role="tabpanel">
-          ${renderTable(['EPS', 'BPS', 'PER', 'PBR', 'ROE'], [
-            { label: 'EPS', data: stock.epsHistory },
-            { label: 'BPS', data: stock.bpsHistory },
-            { label: 'PER', data: stock.perHistory },
-            { label: 'PBR', data: stock.pbrHistory },
-            { label: 'ROE(%)', data: stock.roeHistory, suffix: '%' },
-          ], stock.years || YEARS)}
+        <div class="tab-panel" id="tab-revenue" role="tabpanel">
+          <div class="chart-legend" style="margin-top:16px">
+            <span class="legend-item"><span class="legend-dot" style="background:#3182f6"></span>매출액</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#00c471"></span>영업이익</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#f04452"></span>순이익</span>
+          </div>
+          <canvas class="chart-canvas" id="revenueChart"></canvas>
         </div>
       </div>
 
@@ -157,11 +141,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     </section>
 
+    <section class="news-section">
+      <h2>관련 뉴스</h2>
+      <div id="newsContainer">${renderNews(stock.news, 0, stock.newsTotalPages)}</div>
+    </section>
+
   `;
 
   document.getElementById('backBtn').addEventListener('click', () => history.back());
 
   bindNewsPagination(code);
+
+  const revenueCanvas = document.getElementById('revenueChart');
+  const revenueDatasets = [
+    { data: stock.revenueHistory, color: '#3182f6' },
+    { data: stock.operatingHistory, color: '#00c471' },
+    { data: stock.netIncomeHistory, color: '#f04452' },
+  ];
 
   // 탭
   document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -170,16 +166,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'revenue') {
+        drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
+      }
     });
   });
-
-  // 차트
-  const revenueCanvas = document.getElementById('revenueChart');
-  drawLineChart(revenueCanvas, [
-    { data: stock.revenueHistory, color: '#3182f6' },
-    { data: stock.operatingHistory, color: '#00c471' },
-    { data: stock.netIncomeHistory, color: '#f04452' },
-  ], yearLabels);
 
   const balanceCanvas = document.getElementById('balanceChart');
   drawBarChart(balanceCanvas, [
@@ -189,11 +180,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   ], yearLabels);
 
   window.addEventListener('resize', () => {
-    drawLineChart(revenueCanvas, [
-      { data: stock.revenueHistory, color: '#3182f6' },
-      { data: stock.operatingHistory, color: '#00c471' },
-      { data: stock.netIncomeHistory, color: '#f04452' },
-    ], yearLabels);
+    if (document.querySelector('.tab-btn[data-tab="revenue"]')?.classList.contains('active')) {
+      drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
+    }
     drawBarChart(balanceCanvas, [
       { data: stock.assetHistory, color: '#3182f6' },
       { data: stock.debtHistory, color: '#f04452' },
