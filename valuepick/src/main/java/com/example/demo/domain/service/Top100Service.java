@@ -25,6 +25,9 @@ public class Top100Service {
     private final StockIndicatorRepository stockIndicatorRepository;
     private final Top100Repository top100Repository;
 
+    // Piotroski F-Score 통과 기준 (9점 만점 중 6점 이상)
+    private static final int F_SCORE_PASS_THRESHOLD = 6;
+
     // ── 진입점 ────────────────────────────────────────────────────────────────
 
     /**
@@ -49,12 +52,26 @@ public class Top100Service {
             return;
         }
 
-        log.info("[Top100Service] 스코어링 대상 종목 수: {}", indicators.size());
+        // 업종 미분류(induty_code 미수집) 종목은 금융업 여부를 판단할 수 없어 F-Score 필터를 공정하게 적용 못 함 → 후보에서 제외
+        // (진짜 금융업인데 induty_code가 아직 없으면 예외 통과를 못 받고 구조적으로 부당하게 탈락하는 걸 방지)
+        // F-Score 필터: 6점 이상만 통과. 단, 금융업은 F-Score 자체를 계산 안 해서 null이라 필터 예외로 통과시킴
+        List<StockIndicator> candidates = indicators.stream()
+                .filter(i -> i.getCompany().getIndutyCode() != null)
+                .filter(i -> i.getCompany().isFinancialIndustry()
+                        || (i.getFScore() != null && i.getFScore() >= F_SCORE_PASS_THRESHOLD))
+                .collect(Collectors.toList());
 
-        List<ScoredIndicator> scored = scoreAll(indicators);
+        if (candidates.isEmpty()) {
+            log.warn("[Top100Service] F-Score 필터 통과 종목이 없습니다.");
+            return;
+        }
+
+        log.info("[Top100Service] 스코어링 대상 종목 수: {} (F-Score 필터 통과: {})", indicators.size(), candidates.size());
+
+        List<ScoredIndicator> scored = scoreAll(candidates);
 
         // 점수 내림차순 정렬 후 상위 100개 추출
-        scored.sort(Comparator.comparingInt(ScoredIndicator::score).reversed());
+        scored.sort(Comparator.comparingDouble(ScoredIndicator::score).reversed());
         List<ScoredIndicator> top100 = scored.stream().limit(100).collect(Collectors.toList());
 
         List<Top100> entities = top100.stream()
@@ -84,38 +101,54 @@ public class Top100Service {
 
     // ── 스코어 계산 ───────────────────────────────────────────────────────────
 
+    // 팩터별 가중치 (합계 1.0) - PER25%/PBR15%/ROE20%/ROA10%/부채비율15%/EPS성장률5%/모멘텀10%
+    private static final double WEIGHT_PER = 0.25;
+    private static final double WEIGHT_PBR = 0.15;
+    private static final double WEIGHT_ROE = 0.20;
+    private static final double WEIGHT_ROA = 0.10;
+    private static final double WEIGHT_DEBT_RATIO = 0.15;
+    private static final double WEIGHT_EPS_GROWTH = 0.05;
+    private static final double WEIGHT_MOMENTUM = 0.10;
+
     /**
-     * 각 지표를 0~25점(정수)으로 백분위 정규화한 뒤 합산 (총 100점 만점)
-     * - PER 낮을수록 고점수 (저평가 매력)
-     * - PBR 낮을수록 고점수 (순자산 대비 저평가)
-     * - ROE 높을수록 고점수 (수익성)
-     * - 배당수익률 높을수록 고점수 (배당매력) — 없으면 0점
+     * 각 지표를 백분위 기준 0~1로 정규화한 뒤 팩터별 가중치를 곱해 합산 (총점 0~1)
+     * - PER·PBR·부채비율은 낮을수록 고점수 (저평가·재무건전성)
+     * - ROE·ROA·EPS성장률·모멘텀은 높을수록 고점수 (수익성·성장성·추세)
+     * - F-Score는 이 가중합산에 포함되지 않고 calculateAndSave()에서 사전 필터로만 사용
      */
     private List<ScoredIndicator> scoreAll(List<StockIndicator> indicators) {
 
         int n = indicators.size();
 
         // 각 지표값 추출: 낮을수록 좋은 지표 null → MAX_VALUE, 높을수록 좋은 지표 null → -MAX_VALUE
-        double[] pers       = indicators.stream().mapToDouble(i -> { Double v = i.getPer();       return v != null ? v : Double.MAX_VALUE;  }).toArray();
-        double[] pbrs       = indicators.stream().mapToDouble(i -> { Double v = i.getPbr();       return v != null ? v : Double.MAX_VALUE;  }).toArray();
-        double[] roes       = indicators.stream().mapToDouble(i -> { Double v = i.getRoe();       return v != null ? v : -Double.MAX_VALUE; }).toArray();
-        double[] debtRatios = indicators.stream().mapToDouble(i -> { Double v = i.getDebtRatio(); return v != null ? v : Double.MAX_VALUE;  }).toArray();
+        double[] pers        = indicators.stream().mapToDouble(i -> { Double v = i.getPer();           return v != null ? v : Double.MAX_VALUE;  }).toArray();
+        double[] pbrs        = indicators.stream().mapToDouble(i -> { Double v = i.getPbr();           return v != null ? v : Double.MAX_VALUE;  }).toArray();
+        double[] roes        = indicators.stream().mapToDouble(i -> { Double v = i.getRoe();           return v != null ? v : -Double.MAX_VALUE; }).toArray();
+        double[] roas        = indicators.stream().mapToDouble(i -> { Double v = i.getRoa();           return v != null ? v : -Double.MAX_VALUE; }).toArray();
+        double[] debtRatios  = indicators.stream().mapToDouble(i -> { Double v = i.getDebtRatio();     return v != null ? v : Double.MAX_VALUE;  }).toArray();
+        double[] epsGrowths  = indicators.stream().mapToDouble(i -> { Double v = i.getEpsGrowthRate(); return v != null ? v : -Double.MAX_VALUE; }).toArray();
+        double[] momentums   = indicators.stream().mapToDouble(i -> { Double v = i.getMomentum();      return v != null ? v : -Double.MAX_VALUE; }).toArray();
 
         // 순위 배열 (0-based): 낮을수록 유리 → ascRank, 높을수록 유리 → descRank
         int[] perRank       = ascRank(pers);
         int[] pbrRank       = ascRank(pbrs);
         int[] roeRank       = descRank(roes);
+        int[] roaRank       = descRank(roas);
         int[] debtRatioRank = ascRank(debtRatios);
+        int[] epsGrowthRank = descRank(epsGrowths);
+        int[] momentumRank  = descRank(momentums);
 
         List<ScoredIndicator> result = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            // 4개 지표 × 최대 25점 = 100점 만점
-            int perScore       = percentileScore(perRank[i], n);
-            int pbrScore       = percentileScore(pbrRank[i], n);
-            int roeScore       = percentileScore(roeRank[i], n);
-            int debtRatioScore = percentileScore(debtRatioRank[i], n);
+            double total = percentileFraction(perRank[i], n) * WEIGHT_PER
+                    + percentileFraction(pbrRank[i], n) * WEIGHT_PBR
+                    + percentileFraction(roeRank[i], n) * WEIGHT_ROE
+                    + percentileFraction(roaRank[i], n) * WEIGHT_ROA
+                    + percentileFraction(debtRatioRank[i], n) * WEIGHT_DEBT_RATIO
+                    + percentileFraction(epsGrowthRank[i], n) * WEIGHT_EPS_GROWTH
+                    + percentileFraction(momentumRank[i], n) * WEIGHT_MOMENTUM;
 
-            result.add(new ScoredIndicator(indicators.get(i), perScore + pbrScore + roeScore + debtRatioScore));
+            result.add(new ScoredIndicator(indicators.get(i), total));
         }
         return result;
     }
@@ -155,15 +188,15 @@ public class Top100Service {
     }
 
     /**
-     * rank(0-based) → 0~25 점수
-     * rank=0(최고) → 25점, rank=n-1(최저) → 0점
+     * rank(0-based) → 0~1 백분위 값
+     * rank=0(최고) → 1.0, rank=n-1(최저) → 0.0
      */
-    private int percentileScore(int rank, int n) {
-        if (n <= 1) return 25;
-        return (int) Math.round((double) (n - 1 - rank) / (n - 1) * 25);
+    private double percentileFraction(int rank, int n) {
+        if (n <= 1) return 1.0;
+        return (double) (n - 1 - rank) / (n - 1);
     }
 
     // ── 내부 레코드 ───────────────────────────────────────────────────────────
 
-    private record ScoredIndicator(StockIndicator indicator, int score) {}
+    private record ScoredIndicator(StockIndicator indicator, double score) {}
 }

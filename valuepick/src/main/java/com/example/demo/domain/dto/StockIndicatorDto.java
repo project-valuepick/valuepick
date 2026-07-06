@@ -19,6 +19,10 @@ public class StockIndicatorDto {
     private LocalDateTime calculatedAt;
     private Double eps;
     private Double bps;
+    private Double roa;
+    private Double momentum;
+    private Integer fScore;
+    private Double epsGrowthRate;
 
     public StockIndicator toEntity() {
         return StockIndicator.builder()
@@ -31,6 +35,10 @@ public class StockIndicatorDto {
                 .calculatedAt(this.calculatedAt)
                 .eps(this.eps)
                 .bps(this.bps)
+                .roa(this.roa)
+                .momentum(this.momentum)
+                .fScore(this.fScore)
+                .epsGrowthRate(this.epsGrowthRate)
                 .build();
     }
 
@@ -45,6 +53,10 @@ public class StockIndicatorDto {
                 .calculatedAt(entity.getCalculatedAt())
                 .eps(entity.getEps())
                 .bps(entity.getBps())
+                .roa(entity.getRoa())
+                .momentum(entity.getMomentum())
+                .fScore(entity.getFScore())
+                .epsGrowthRate(entity.getEpsGrowthRate())
                 .build();
     }
 }

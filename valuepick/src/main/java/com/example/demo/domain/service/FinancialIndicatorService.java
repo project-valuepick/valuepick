@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +53,9 @@ public class FinancialIndicatorService {
     @Transactional
     public void calculateAll(String year, String reprtCode) {
 
+        // 모멘텀/F-Score 기준일 = 어제 (당일 주가는 장 마감 전이라 아직 없을 수 있음)
+        LocalDate baseDt = LocalDate.now().minusDays(1);
+
         int savedCount = 0;
         int page = 0;
 
@@ -66,7 +70,7 @@ public class FinancialIndicatorService {
 
             for (Company company : companies) {
                 try {
-                    boolean saved = calculateAndSave(company, year, reprtCode);
+                    boolean saved = calculateAndSave(company, year, reprtCode, baseDt);
                     if (saved) {
                         savedCount++;
                         log.info("지표 저장 완료: {} (page={}, total={})",
@@ -91,7 +95,7 @@ public class FinancialIndicatorService {
      * 단일 기업 지표 계산 후 저장
      * 저장 성공 시 true, 데이터 부족으로 스킵 시 false 반환
      */
-    private boolean calculateAndSave(Company company, String year, String reprtCode) {
+    private boolean calculateAndSave(Company company, String year, String reprtCode, LocalDate baseDt) {
 
         // ── 재무제표 조회: CFS 우선, 없으면 OFS ──────────────────────
         Optional<FinancialStatement> financialOpt =
@@ -122,7 +126,7 @@ public class FinancialIndicatorService {
         StockPrice stockPrice = stockPriceOpt.get();
 
         // ── 지표 계산 후 저장 (upsert: PK 충돌 시 덮어쓰기) ─────────
-        StockIndicator indicator = calculate(company, financial, stockPrice, year);
+        StockIndicator indicator = calculate(company, financial, stockPrice, year, baseDt);
         stockIndicatorRepository.save(indicator);
 
         return true;
@@ -135,7 +139,7 @@ public class FinancialIndicatorService {
      * 환율 조회 실패 시 IllegalStateException → calculateAll에서 catch 후 스킵
      */
     private StockIndicator calculate(Company company, FinancialStatement financial,
-                                     StockPrice stockPrice, String year) {
+                                     StockPrice stockPrice, String year, LocalDate baseDt) {
 
         // ── 환율 조회 ─────────────────────────────────────────────────
         // currency가 null이면 KRW로 간주 → fxRate = 1.0
@@ -171,6 +175,37 @@ public class FinancialIndicatorService {
         // year 기준 보통주 배당 조회 (연도 불일치 방지)
         Double dividendYield = resolveDividendYield(company.getCorpCode(), closePrice);
 
+        // ROA(총자산순이익률) = 당기순이익 / 자산총계 × 100
+        // 같은 재무제표 내 두 항목의 비율이라 환율 변환 불필요 (원화 환산 전 금액이어도 비율은 동일)
+        Long totalAssets = financial.getTotalAssets();
+        Double roa = totalAssets != null && totalAssets > 0
+                ? round((double) financial.getNetIncome() / totalAssets * 100)
+                : null;
+
+        // 모멘텀 계산에 쓰이는 1개월전·12개월전 종가 스냅샷 (F-Score의 신주발행 여부 판단에도 재사용)
+        // baseDt(어제) 기준 - 당일 주가는 장 마감 전이라 아직 없을 수 있어서 어제를 기준일로 사용
+        Optional<StockPrice> oneMonthAgoOpt = stockPriceRepository
+                .findTopBySrtnCdAndBasDtLessThanEqualOrderByBasDtDesc(company.getStockCode(), baseDt.minusMonths(1));
+        Optional<StockPrice> twelveMonthsAgoOpt = stockPriceRepository
+                .findTopBySrtnCdAndBasDtLessThanEqualOrderByBasDtDesc(company.getStockCode(), baseDt.minusMonths(12));
+
+        // 모멘텀 = (1개월전 종가 - 12개월전 종가) / 12개월전 종가 (12-1 모멘텀: 최근 1개월은 단기반전효과 배제)
+        Double momentum = resolveMomentum(oneMonthAgoOpt, twelveMonthsAgoOpt);
+
+        // Piotroski F-Score 계산 - 전년도 재무제표(같은 fsDiv) 있어야 계산 가능
+        Optional<FinancialStatement> prevFinancialOpt = financialStatementRepository
+                .findByStockCodeAndYearAndReprtCodeAndFsDiv(
+                        company.getStockCode(), String.valueOf(Integer.parseInt(year) - 1),
+                        financial.getReprtCode(), financial.getFsDiv());
+
+        // 금융업(induty_code 64/65/66)은 유동비율·매출총이익률 등 F-Score 항목 구조 자체가 안 맞아 계산 스킵(null)
+        // Top100Service의 F-Score 필터에서는 null을 "미달"이 아니라 "필터 예외(통과)"로 처리
+        Integer fScore = company.isFinancialIndustry() ? null
+                : resolveFScore(financial, prevFinancialOpt.orElse(null), roa, stockPrice, twelveMonthsAgoOpt.orElse(null));
+
+        // EPS성장률 = (당기 EPS - 전기 EPS) / |전기 EPS| × 100. 전기 EPS = 전년도 당기순이익 / 1년전 상장주식수
+        Double epsGrowthRate = resolveEpsGrowthRate(eps, prevFinancialOpt.orElse(null), twelveMonthsAgoOpt.orElse(null));
+
         // ── StockIndicator 빌드 ───────────────────────────────────────
         return StockIndicator.builder()
                 .stockCode(company.getStockCode())
@@ -181,8 +216,96 @@ public class FinancialIndicatorService {
                 .roe(roe)
                 .debtRatio(debtRatio)
                 .dividendYield(dividendYield)
+                .roa(roa)
+                .momentum(momentum)
+                .fScore(fScore)
+                .epsGrowthRate(epsGrowthRate)
                 .calculatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    // 모멘텀 = (1개월전 종가 - 12개월전 종가) / 12개월전 종가. 기준일 데이터 없으면 계산 불가(null)
+    private Double resolveMomentum(Optional<StockPrice> oneMonthAgoOpt, Optional<StockPrice> twelveMonthsAgoOpt) {
+        if (oneMonthAgoOpt.isEmpty() || twelveMonthsAgoOpt.isEmpty()) return null;
+
+        long oneMonthAgoPrice = nvl(oneMonthAgoOpt.get().getClpr());
+        long twelveMonthsAgoPrice = nvl(twelveMonthsAgoOpt.get().getClpr());
+        if (twelveMonthsAgoPrice == 0) return null;
+
+        return round((double) (oneMonthAgoPrice - twelveMonthsAgoPrice) / twelveMonthsAgoPrice);
+    }
+
+    /**
+     * Piotroski F-Score(0~9) 계산. 전년도 재무제표가 없으면 비교 자체가 불가능하므로 null 반환
+     * - 수익성(4): ROA>0 / 영업현금흐름>0 / ROA 전년대비 증가 / 영업현금흐름>순이익
+     * - 재무건전성(3): 부채비율 감소 / 유동비율 증가 / 신주발행 없음(상장주식수 비증가)
+     * - 운영효율성(2): 매출총이익률 증가 / 자산회전율 증가
+     */
+    private Integer resolveFScore(FinancialStatement curr, FinancialStatement prev, Double currentRoa,
+                                   StockPrice currentPrice, StockPrice yearAgoPrice) {
+        if (prev == null) return null;
+
+        int score = 0;
+
+        // ── 수익성 ────────────────────────────────────────────────────
+        if (currentRoa != null && currentRoa > 0) score++;
+
+        Long cfo = curr.getOperatingCashFlow(); // 영업활동현금흐름
+        if (cfo != null && cfo > 0) score++;
+
+        Double prevRoa = prev.getTotalAssets() != null && prev.getTotalAssets() > 0
+                ? (double) prev.getNetIncome() / prev.getTotalAssets() * 100 : null;
+        if (currentRoa != null && prevRoa != null && currentRoa > prevRoa) score++;
+
+        if (cfo != null && curr.getNetIncome() != null && cfo > curr.getNetIncome()) score++;
+
+        // ── 재무건전성 ────────────────────────────────────────────────
+        Double currDebtRatio = ratio(curr.getTotalLiabilities(), curr.getTotalEquity());
+        Double prevDebtRatio = ratio(prev.getTotalLiabilities(), prev.getTotalEquity());
+        if (currDebtRatio != null && prevDebtRatio != null && currDebtRatio < prevDebtRatio) score++;
+
+        Double currCurrentRatio = ratio(curr.getCurrentAssets(), curr.getCurrentLiabilities());
+        Double prevCurrentRatio = ratio(prev.getCurrentAssets(), prev.getCurrentLiabilities());
+        if (currCurrentRatio != null && prevCurrentRatio != null && currCurrentRatio > prevCurrentRatio) score++;
+
+        // 신주발행 없음 = 12개월전 대비 상장주식수가 늘지 않음
+        if (currentPrice != null && yearAgoPrice != null
+                && currentPrice.getLstgStCnt() != null && yearAgoPrice.getLstgStCnt() != null
+                && currentPrice.getLstgStCnt() <= yearAgoPrice.getLstgStCnt()) score++;
+
+        // ── 운영효율성 ────────────────────────────────────────────────
+        Double currGrossMargin = ratio(curr.getGrossProfit(), curr.getRevenue());
+        Double prevGrossMargin = ratio(prev.getGrossProfit(), prev.getRevenue());
+        if (currGrossMargin != null && prevGrossMargin != null && currGrossMargin > prevGrossMargin) score++;
+
+        Double currAssetTurnover = ratio(curr.getRevenue(), curr.getTotalAssets());
+        Double prevAssetTurnover = ratio(prev.getRevenue(), prev.getTotalAssets());
+        if (currAssetTurnover != null && prevAssetTurnover != null && currAssetTurnover > prevAssetTurnover) score++;
+
+        return score;
+    }
+
+    // 분모가 null/0 이하면 계산 불가(null). 같은 재무제표 내 비율이라 환율 변환 불필요
+    private Double ratio(Long numerator, Long denominator) {
+        if (numerator == null || denominator == null || denominator <= 0) return null;
+        return (double) numerator / denominator;
+    }
+
+    // EPS성장률 = (당기 EPS - 전기 EPS) / |전기 EPS| × 100
+    // 전기 EPS = 전년도 당기순이익 / 1년전 상장주식수 (전년도 재무제표·1년전 주가 둘 다 있어야 계산 가능)
+    private Double resolveEpsGrowthRate(Double eps, FinancialStatement prevFinancial, StockPrice yearAgoPrice) {
+        if (eps == null || prevFinancial == null || yearAgoPrice == null) return null;
+
+        Long prevNetIncome = prevFinancial.getNetIncome();
+        Long prevShareCount = yearAgoPrice.getLstgStCnt();
+        if (prevNetIncome == null || prevShareCount == null || prevShareCount == 0) return null;
+
+        double prevEps = (double) prevNetIncome / prevShareCount;
+        // 전기가 적자(prevEps<=0)면 성장률 %가 수학적으로 정의되지 않아(부호 전환) 계산 스킵
+        // → null은 다른 팩터(ROE·ROA·모멘텀)와 동일하게 Top100Service에서 최하위로 처리됨
+        if (prevEps <= 0) return null;
+
+        return round((eps - prevEps) / prevEps * 100);
     }
 
     private Double resolveDividendYield(String corpCode, long closePrice) {

@@ -33,7 +33,7 @@ function renderHeader(activePage) {
             <input type="text" class="search-input" id="headerSearch" placeholder="종목명 또는 종목코드 검색" aria-label="종목 검색" />
           </div>
           ${localStorage.getItem('accessToken')
-            ? `<button class="btn-text" id="logoutBtn">로그아웃</button>`
+            ? `<a class="btn-text" href="mypage.html">마이페이지</a><button class="btn-text" id="logoutBtn">로그아웃</button>`
             : `<a class="btn-text" href="login.html">로그인</a><a class="btn-primary" href="register.html">회원가입</a>`
           }
         </div>
@@ -67,6 +67,66 @@ function initHeader(activePage) {
       }
     }
   });
+}
+
+async function authFetch(url, options = {}) {
+  const base = typeof API_BASE !== 'undefined' ? API_BASE : '';
+  const token = localStorage.getItem('accessToken');
+
+  const res = await fetch(base + url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+
+  if (res.status === 401) {
+    const body = await res.json().catch(() => ({}));
+
+    if (body.error === 'ACCESS_TOKEN_EXPIRED') {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        localStorage.removeItem('accessToken');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const refreshRes = await fetch(base + '/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!refreshRes.ok) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { accessToken, refreshToken: newRefreshToken } = await refreshRes.json();
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+
+      return fetch(base + url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          ...options.headers,
+        },
+      });
+    }
+
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  return res;
 }
 
 function goToDetail(code) {
