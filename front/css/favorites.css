@@ -1,0 +1,5 @@
+/* favorites.css — 관심종목 페이지 (list.css의 카드 레이아웃을 재사용하되, 테이블 없이 카드만 항상 표시) */
+
+.card-list {
+  display: flex !important;
+}

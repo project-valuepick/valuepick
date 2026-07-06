@@ -49,6 +49,7 @@
 
 /* 모바일 카드 — 랭킹 전용 */
 .rank-card {
+  position: relative;
   cursor: pointer;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -66,6 +67,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 10px;
+  padding-top: 22px;
 }
 
 .rank-card-info {

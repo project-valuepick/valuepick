@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('home');
+  await loadFavoriteState();
 
   // 시장 지표
   const marketGrid = document.getElementById('marketGrid');

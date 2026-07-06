@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let stock;
   try {
+    await loadFavoriteState();
     stock = await fetchStockFull(code);
   } catch (e) {
     stock = null;
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="summary-title">
           <h1>${stock.name}</h1>
           <div class="code">${stock.code}</div>
+          <button class="favorite-btn${isFavorite(stock.code) ? ' active' : ''}" data-favorite-code="${stock.code}" type="button" aria-label="관심종목 ${isFavorite(stock.code) ? '해제' : '추가'}">★</button>
         </div>
         <div class="summary-price">
           <div class="price">${formatPrice(stock.price)}</div>
@@ -150,14 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('backBtn').addEventListener('click', () => history.back());
 
-  bindNewsPagination(code);
-
-  const revenueCanvas = document.getElementById('revenueChart');
-  const revenueDatasets = [
-    { data: stock.revenueHistory, color: '#3182f6' },
-    { data: stock.operatingHistory, color: '#00c471' },
-    { data: stock.netIncomeHistory, color: '#f04452' },
-  ];
+  bindFavoriteButtons(main);
 
   // 탭
   document.querySelectorAll('.tab-btn').forEach((btn) => {
