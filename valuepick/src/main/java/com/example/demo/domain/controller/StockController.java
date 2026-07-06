@@ -1,17 +1,17 @@
 package com.example.demo.domain.controller;
 
 import com.example.demo.domain.dto.NewsDto;
+import com.example.demo.domain.repository.CompanyRepository;
+import com.example.demo.domain.repository.StockPriceRepository;
 import com.example.demo.domain.service.NewsService;
 import com.example.demo.domain.service.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -20,6 +20,26 @@ public class StockController {
 
     private final StockService stockService;
     private final NewsService newsService;
+    private final CompanyRepository companyRepository;
+    private final StockPriceRepository stockPriceRepository;
+
+    @GetMapping("/search")
+    public List<Map<String, Object>> searchCompanies(@RequestParam String q) {
+        return companyRepository
+                .findTop20ByCorpNameContainingOrStockCodeContainingOrderByCorpNameAsc(q, q)
+                .stream()
+                .map(c -> {
+                    Long price = stockPriceRepository.findTopBySrtnCdOrderByBasDtDesc(c.getStockCode())
+                            .map(sp -> sp.getClpr())
+                            .orElse(null);
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("stockCode", c.getStockCode());
+                    item.put("corpName", c.getCorpName());
+                    item.put("currentPrice", price);
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
 
     @GetMapping("/{stockCode}")
     public Map<String, Object> getStockDetail(@PathVariable String stockCode) {

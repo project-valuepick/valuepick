@@ -18,6 +18,8 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
     // 페이징 처리된 Company 전체 조회 - 대용량 데이터를 100건씩 나눠서 처리할 때 사용
     Page<Company> findAll(Pageable pageable);
 
+    List<Company> findTop20ByCorpNameContainingOrStockCodeContainingOrderByCorpNameAsc(String corpName, String stockCode);
+
     @Query(value = """
             SELECT c.stock_code, c.corp_name,
                    i.per, i.roe, i.pbr, i.dividend_yield,
