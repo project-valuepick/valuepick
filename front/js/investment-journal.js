@@ -315,7 +315,15 @@ async function renderDetailModal() {
 
 function findListItem(kind, id) {
   const sid = String(id);
-  return (listData.content || []).find(item => item.type === kind && String(item.id) === sid);
+  const fromList = (listData.content || []).find(item => item.type === kind && String(item.id) === sid);
+  if (fromList) return fromList;
+
+  if (positionDetailData) {
+    const records = kind === 'buy' ? positionDetailData.buys : kind === 'sell' ? positionDetailData.sells : null;
+    const fromDetail = records && records.find(r => String(r.id) === sid);
+    if (fromDetail) return { ...fromDetail, type: kind };
+  }
+  return undefined;
 }
 
 function renderBuyDetail() {

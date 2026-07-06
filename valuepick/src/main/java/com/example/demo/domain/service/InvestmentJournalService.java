@@ -1,30 +1,41 @@
 package com.example.demo.domain.service;
 
 import com.example.demo.domain.dto.*;
+import com.example.demo.domain.dto.naverPolling.Data;
+import com.example.demo.domain.dto.naverPolling.Root;
 import com.example.demo.domain.dto.request.*;
 import com.example.demo.domain.entity.*;
 import com.example.demo.domain.repository.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class InvestmentJournalService {
 
     private static final int PAGE_SIZE = 10;
+    private static final String NAVER_REALTIME_API = "https://polling.finance.naver.com/api/realtime";
 
     private final UserRepository userRepository;
     private final InvestmentPositionRepository positionRepository;
     private final InvestmentBuyRepository buyRepository;
     private final InvestmentSellRepository sellRepository;
     private final StockPriceRepository stockPriceRepository;
+    private final RestTemplate restTemplate;
 
     // ─── 목록 조회 ────────────────────────────────────────────────────────────────
 
@@ -102,9 +113,7 @@ public class InvestmentJournalService {
         long usedAmount = buyRepository.sumAmountByPositionId(positionId);
         long soldAmount = sellRepository.sumAmountByPositionId(positionId);
 
-        Long currentPrice = stockPriceRepository.findTopBySrtnCdOrderByBasDtDesc(position.getStockCode())
-                .map(sp -> sp.getClpr())
-                .orElse(null);
+        Long currentPrice = resolveCurrentPrice(position.getStockCode());
 
         List<InvestmentBuyDto> buys = buyRepository.findByPositionOrderByBuyAtAsc(position).stream()
                 .map(InvestmentBuyDto::from)
@@ -422,6 +431,43 @@ public class InvestmentJournalService {
         return true;
     }
 
+    // 실시간 시세 조회 (네이버 폴링 API), 실패 시 최근 종가로 폴백
+    private Long resolveCurrentPrice(String stockCode) {
+        Long realtime = fetchRealtimePrice(stockCode);
+        if (realtime != null) return realtime;
+
+        return stockPriceRepository.findTopBySrtnCdOrderByBasDtDesc(stockCode)
+                .map(sp -> sp.getClpr())
+                .orElse(null);
+    }
+
+    private Long fetchRealtimePrice(String stockCode) {
+        if (stockCode == null || stockCode.isBlank()) return null;
+
+        try {
+            URI uri = UriComponentsBuilder.fromHttpUrl(NAVER_REALTIME_API)
+                    .queryParam("query", "SERVICE_POPULAR_ITEM:" + stockCode)
+                    .build()
+                    .toUri();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149.0.0.0 Safari/537.36");
+            headers.set("Referer", "https://finance.naver.com/");
+            headers.setAccept(List.of(MediaType.ALL));
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    uri, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+
+            Root root = new ObjectMapper().readValue(response.getBody(), Root.class);
+            Data data = root.getResult().getAreas().get(0).getDatas().get(0);
+            return (long) data.getNv();
+        } catch (Exception e) {
+            log.warn("네이버 실시간 시세 조회 실패 - stockCode={}, 최근 종가로 대체: {}", stockCode, e.toString());
+            return null;
+        }
+    }
+
     private LocalDateTime sortTime(JournalListItemDto item) {
         if ("buy".equals(item.getType())) return item.getBuyAt();
         if ("sell".equals(item.getType())) return item.getSellAt();
@@ -465,9 +511,7 @@ public class InvestmentJournalService {
         long usedAmount = buyRepository.sumAmountByPositionId(positionId);
         long soldAmount = sellRepository.sumAmountByPositionId(positionId);
 
-        Long currentPrice = stockPriceRepository.findTopBySrtnCdOrderByBasDtDesc(p.getStockCode())
-                .map(sp -> sp.getClpr())
-                .orElse(null);
+        Long currentPrice = resolveCurrentPrice(p.getStockCode());
 
         return JournalListItemDto.builder()
                 .type("position")
