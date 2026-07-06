@@ -21,6 +21,10 @@ public class FinancialStatementDto {
     private Long totalAssets;
     private Long totalLiabilities;
     private Long totalEquity;
+    private Long currentAssets;
+    private Long currentLiabilities;
+    private Long operatingCashFlow;
+    private Long grossProfit;
     private String currency;
 
 
@@ -36,6 +40,10 @@ public class FinancialStatementDto {
                 .totalAssets(this.totalAssets)
                 .totalLiabilities(this.totalLiabilities)
                 .totalEquity(this.totalEquity)
+                .currentAssets(this.currentAssets)
+                .currentLiabilities(this.currentLiabilities)
+                .operatingCashFlow(this.operatingCashFlow)
+                .grossProfit(this.grossProfit)
                 .currency(this.currency)
                 .build();
     }
@@ -53,6 +61,10 @@ public class FinancialStatementDto {
                 .totalAssets(entity.getTotalAssets())
                 .totalLiabilities(entity.getTotalLiabilities())
                 .totalEquity(entity.getTotalEquity())
+                .currentAssets(entity.getCurrentAssets())
+                .currentLiabilities(entity.getCurrentLiabilities())
+                .operatingCashFlow(entity.getOperatingCashFlow())
+                .grossProfit(entity.getGrossProfit())
                 .currency(entity.getCurrency())
                 .build();
     }

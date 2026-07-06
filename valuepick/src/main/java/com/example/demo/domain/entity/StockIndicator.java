@@ -35,4 +35,12 @@ public class StockIndicator {
 
     private Double eps;
     private Double bps;
+    private Double roa;
+    private Double momentum;
+
+    @Column(name = "f_score")
+    private Integer fScore;
+
+    @Column(name = "eps_growth_rate")
+    private Double epsGrowthRate;
 }

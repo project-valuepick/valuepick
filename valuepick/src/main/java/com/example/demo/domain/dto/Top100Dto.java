@@ -13,7 +13,7 @@ public class Top100Dto {
     private LocalDate baseDt;
     private String stockCode;
     private String corpCode;
-    private Integer score;
+    private Double score;
 
     public Top100 toEntity() {
         return Top100.builder()
