@@ -68,4 +68,12 @@ public class Company {
         this.ceoNm = ceoNm;
         this.updatedAt = LocalDateTime.now();
     }
+
+    // induty_code 앞 2자리(KSIC 중분류) 64=금융업/65=보험 및 연금업/66=금융 및 보험관련 서비스업
+    // 금융업은 유동비율·매출총이익률 등 F-Score 항목 구조 자체가 안 맞아 F-Score 계산을 스킵할 때 사용
+    public boolean isFinancialIndustry() {
+        if (indutyCode == null || indutyCode.length() < 2) return false;
+        String prefix = indutyCode.substring(0, 2);
+        return "64".equals(prefix) || "65".equals(prefix) || "66".equals(prefix);
+    }
 }
