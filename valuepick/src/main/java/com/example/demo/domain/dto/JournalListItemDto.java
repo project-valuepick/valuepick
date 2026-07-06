@@ -1,5 +1,6 @@
 package com.example.demo.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import java.time.LocalDateTime;
 
@@ -18,14 +19,18 @@ public class JournalListItemDto {
     private Boolean isShared;
 
     // buy
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime buyAt;
 
     // sell
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime sellAt;
 
     // position
     private String state;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime firstBuyAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime finalSellAt;
     private String note;
     private Integer holdingQty;
