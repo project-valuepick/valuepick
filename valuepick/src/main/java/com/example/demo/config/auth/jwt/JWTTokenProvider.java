@@ -91,12 +91,20 @@ public class JWTTokenProvider {
         for (String role : auth.split(",")) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
-
+        
+        // 관심종목
+        User user = userRepository.findByEmail(username).orElse(null);
+        if (user == null) {
+          return null;
+        }
+      
+        // 회원탈퇴
         if (!userRepository.existsByEmailAndDeletedAtIsNull(username)) {
             return null;
         }
 
         UserDto userDto = UserDto.builder()
+                .id(user.getId())
                 .email(username)
                 .role(UserRole.valueOf(auth.replace("ROLE_", "")))
                 .build();

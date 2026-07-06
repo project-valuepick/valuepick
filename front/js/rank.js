@@ -1,5 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initHeader('ranking');
+  await loadFavoriteState();
 
   const tableBody       = document.getElementById('tableBody');
   const cardList        = document.getElementById('cardList');
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.setAttribute('tabindex', '0');
       card.setAttribute('aria-label', `${s.name} 상세 보기`);
       card.innerHTML = `
+        <button class="favorite-btn${isFavorite(s.code) ? ' active' : ''}" data-favorite-code="${s.code}" type="button" aria-label="관심종목 ${isFavorite(s.code) ? '해제' : '추가'}">★</button>
         <div class="rank-card-header">
           <span class="${rankClass(rank)}">${rank}</span>
           <div class="rank-card-info">
@@ -83,12 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       cardList.appendChild(card);
 
+
       rowRefs.set(s.code, {
         priceCell,
         changeCell,
         cardPriceEl:  card.querySelector('.stock-price'),
         cardChangeEl: card.querySelector('.stock-change'),
       });
+
+      bindFavoriteButtons(card);
+      
     });
   }
 

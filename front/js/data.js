@@ -58,6 +58,14 @@ function sortStocks(stocks, key, dir) {
 
 const API_BASE = "http://localhost:8080";
 
+// 로그인 토큰을 Authorization 헤더에 실어 보내는 fetch 래퍼 (관심종목 등 인증 필요 API용)
+function authFetch(url, options = {}) {
+  const token = localStorage.getItem('accessToken');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(url, { ...options, headers });
+}
+
 // 목록 전체 필드 정규화 (/info/list, /info/list/filter, /info/search)
 function normalizeStock(s) {
   return {
@@ -222,17 +230,24 @@ async function fetchStocks(params = {}) {
  * 종목 상세 — stock_code로 검색 후 반환 (detail.js 용)
  * ※ 재무제표 상세 API 구현
  */
+async function fetchStockNews(code, page = 0) {
+  const res = await fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}/news?page=${page}`);
+  if (!res.ok) return { content: [], totalPages: 0, number: 0 };
+  return res.json();
+}
+
 async function fetchStockFull(code) {
-   const [stockRes, fsRes, newsRes] = await Promise.all([
+   const [stockRes, fsRes, newsPage] = await Promise.all([
     fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}`),
     fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}/financial-statements`),
-    fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}/news`),
+    fetchStockNews(code, 0),
   ]);
   if (!stockRes.ok) throw new Error(`fetchStockFull failed: ${stockRes.status}`);
 
   const { company, indicator, latestPrice, priceHistory = [] } = await stockRes.json();
   const statements = fsRes.ok ? await fsRes.json() : [];
-  const news = newsRes.ok ? await newsRes.json() : [];
+  const news = newsPage.content;
+  const newsTotalPages = newsPage.totalPages;
 
   // 등락액: 최근 2개 종가 차이
   const changeAmount = priceHistory.length >= 2
@@ -251,6 +266,7 @@ async function fetchStockFull(code) {
   return {
   code:            company.stockCode,
     news,
+    newsTotalPages,
     name:            company.corpName,
     price:           Number(latestPrice?.clpr) || 0,
     changeRate:      Number(latestPrice?.fltRt) || 0,
@@ -286,4 +302,25 @@ async function fetchStockFull(code) {
     epsHistory:  years.map(() => 0),
     bpsHistory:  years.map(() => 0),
   };
+}
+
+// ──────────────────────────────────────────────
+// 관심종목 (로그인 필요)
+// ──────────────────────────────────────────────
+
+async function fetchFavorites() {
+  const res = await authFetch(`${API_BASE}/api/favorites`);
+  if (!res.ok) throw new Error(`fetchFavorites failed: ${res.status}`);
+  const data = await res.json();
+  return data.map(normalizeStock);
+}
+
+async function addFavorite(stockCode) {
+  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`addFavorite failed: ${res.status}`);
+}
+
+async function removeFavorite(stockCode) {
+  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`removeFavorite failed: ${res.status}`);
 }

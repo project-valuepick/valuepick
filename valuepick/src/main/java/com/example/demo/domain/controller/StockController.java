@@ -7,9 +7,11 @@ import com.example.demo.domain.service.NewsService;
 import com.example.demo.domain.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
 import java.util.*;
 import java.util.stream.Collectors;
+
+
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -45,7 +47,7 @@ public class StockController {
     }
 
     @GetMapping("/{stockCode}/news")
-    public List<NewsDto> getStockNews(@PathVariable String stockCode) {
-        return newsService.getNews(stockCode);
+    public Page<NewsDto> getStockNews(@PathVariable String stockCode, @RequestParam(defaultValue = "0") int page) {
+        return newsService.getNews(stockCode, page);
     }
 }
