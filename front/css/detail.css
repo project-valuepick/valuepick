@@ -232,6 +232,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px;
+  margin-bottom: 24px;
 }
 
 .financial-section > h2 {
