@@ -3,3 +3,40 @@
 .card-list {
   display: flex !important;
 }
+
+/* 한 줄 가로 레이아웃 */
+.card-list .stock-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px 14px 44px;
+}
+
+.card-list .stock-card-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-top: 0;
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.card-list .stock-card-header > div:first-child {
+  min-width: 140px;
+}
+
+.card-list .stock-name {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.card-list .stock-price-wrap {
+  min-width: 90px;
+  text-align: right;
+}
+
+.card-list .stock-metrics {
+  flex: 1;
+  margin-top: 0;
+  margin-left: 24px;
+  grid-template-columns: repeat(5, 1fr) !important;
+}
