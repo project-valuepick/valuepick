@@ -309,18 +309,18 @@ async function fetchStockFull(code) {
 // ──────────────────────────────────────────────
 
 async function fetchFavorites() {
-  const res = await authFetch(`${API_BASE}/api/favorites`);
+  const res = await authFetch(`/api/favorites`);
   if (!res.ok) throw new Error(`fetchFavorites failed: ${res.status}`);
   const data = await res.json();
   return data.map(normalizeStock);
 }
 
 async function addFavorite(stockCode) {
-  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
+  const res = await authFetch(`/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
   if (!res.ok) throw new Error(`addFavorite failed: ${res.status}`);
 }
 
 async function removeFavorite(stockCode) {
-  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
+  const res = await authFetch(`/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`removeFavorite failed: ${res.status}`);
 }
