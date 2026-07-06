@@ -46,6 +46,18 @@ public class FinancialStatement {
     @Column(name = "total_equity")
     private Long totalEquity;
 
+    @Column(name = "current_assets")
+    private Long currentAssets;
+
+    @Column(name = "current_liabilities")
+    private Long currentLiabilities;
+
+    @Column(name = "operating_cash_flow")
+    private Long operatingCashFlow;
+
+    @Column(name = "gross_profit")
+    private Long grossProfit;
+
     @Column(name = "currency", length = 10)
     private String currency;
 }
