@@ -153,6 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('backBtn').addEventListener('click', () => history.back());
 
   bindFavoriteButtons(main);
+  bindNewsPagination(code);
 
   // 탭
   document.querySelectorAll('.tab-btn').forEach((btn) => {
