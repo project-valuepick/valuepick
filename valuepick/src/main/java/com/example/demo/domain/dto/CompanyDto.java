@@ -14,6 +14,8 @@ public class CompanyDto {
     private String corpCode;
     private String corpName;
     private String corpCls;
+    private String ceoNm;
+    private String indutyNm;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -34,6 +36,8 @@ public class CompanyDto {
                 .corpCode(entity.getCorpCode())
                 .corpName(entity.getCorpName())
                 .corpCls(entity.getCorpCls())
+                .ceoNm(entity.getCeoNm())
+                .indutyNm(entity.getIndutyNm())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();

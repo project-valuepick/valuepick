@@ -78,9 +78,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <h3>회사 정보</h3>
         <div class="info-grid">
           <div class="info-card"><div class="label">회사이름</div><div class="value">${stock.name}</div></div>
-          <div class="info-card"><div class="label">대표이름</div><div class="value">${'-'}</div></div>
-          <div class="info-card"><div class="label">상장일</div><div class="value">${'-'}</div></div>
-          <div class="info-card"><div class="label">업종구분</div><div class="value">${stock.sector}</div></div>
+          <div class="info-card"><div class="label">대표이름</div><div class="value">${stock.ceoNm}</div></div>
+          <div class="info-card"><div class="label">업종구분</div><div class="value">${stock.indutyNm}</div></div>
           <div class="info-card"><div class="label">시장구분</div><div class="value">${stock.market}</div></div>
         </div>
       </div>
@@ -104,7 +103,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="tab-header" role="tablist">
           <button class="tab-btn active" role="tab" data-tab="income">손익계산서</button>
           <button class="tab-btn" role="tab" data-tab="balance">재무상태표</button>
-          <button class="tab-btn" role="tab" data-tab="revenue">수익 추이</button>
         </div>
 
         <div class="tab-panel active" id="tab-income" role="tabpanel">
@@ -122,18 +120,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             { label: '부채비율(%)', data: stock.debtRatioHistory, suffix: '%' },
           ], stock.years || YEARS)}
         </div>
-        <div class="tab-panel" id="tab-revenue" role="tabpanel">
-          <div class="chart-legend" style="margin-top:16px">
-            <span class="legend-item"><span class="legend-dot" style="background:#3182f6"></span>매출액</span>
-            <span class="legend-item"><span class="legend-dot" style="background:#00c471"></span>영업이익</span>
-            <span class="legend-item"><span class="legend-dot" style="background:#f04452"></span>순이익</span>
-          </div>
-          <canvas class="chart-canvas" id="revenueChart"></canvas>
-        </div>
       </div>
+    </section>
 
-      <div class="financial-block">
-        <h3>최근 5년 자산/부채/자본 추이</h3>
+    <section class="chart-section">
+      <h2>수익 및 자산 추이 (최근 5년)</h2>
+      <div class="tab-header" id="chartTabHeader" role="tablist">
+        <button class="tab-btn active" role="tab" data-chart="revenue">수익 추이</button>
+        <button class="tab-btn" role="tab" data-chart="asset">자산 추이</button>
+      </div>
+      <div id="chart-revenue">
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#3182f6"></span>매출액</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#00c471"></span>영업이익</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#f04452"></span>순이익</span>
+        </div>
+        <canvas class="chart-canvas" id="revenueChart"></canvas>
+      </div>
+      <div id="chart-asset" style="display:none">
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot" style="background:#3182f6"></span>자산</span>
           <span class="legend-item"><span class="legend-dot" style="background:#f04452"></span>부채</span>
@@ -153,36 +157,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('backBtn').addEventListener('click', () => history.back());
 
   bindFavoriteButtons(main);
+  bindNewsPagination(code);
 
-  // 탭
-  document.querySelectorAll('.tab-btn').forEach((btn) => {
+  // 재무 탭 (data-tab)
+  document.querySelectorAll('.tab-btn[data-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      if (btn.dataset.tab === 'revenue') {
-        drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
-      }
     });
   });
 
+  const revenueCanvas = document.getElementById('revenueChart');
   const balanceCanvas = document.getElementById('balanceChart');
-  drawBarChart(balanceCanvas, [
+  const revenueDatasets = [
+    { data: stock.revenueHistory, color: '#3182f6' },
+    { data: stock.operatingHistory, color: '#00c471' },
+    { data: stock.netIncomeHistory, color: '#f04452' },
+  ];
+  const balanceDatasets = [
     { data: stock.assetHistory, color: '#3182f6' },
     { data: stock.debtHistory, color: '#f04452' },
     { data: stock.equityHistory, color: '#00c471' },
-  ], yearLabels);
+  ];
+
+  drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
+
+  // 차트 탭 (data-chart)
+  document.querySelectorAll('.tab-btn[data-chart]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn[data-chart]').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const isRevenue = btn.dataset.chart === 'revenue';
+      document.getElementById('chart-revenue').style.display = isRevenue ? '' : 'none';
+      document.getElementById('chart-asset').style.display = isRevenue ? 'none' : '';
+      if (!isRevenue) drawBarChart(balanceCanvas, balanceDatasets, yearLabels);
+    });
+  });
 
   window.addEventListener('resize', () => {
-    if (document.querySelector('.tab-btn[data-tab="revenue"]')?.classList.contains('active')) {
-      drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
-    }
-    drawBarChart(balanceCanvas, [
-      { data: stock.assetHistory, color: '#3182f6' },
-      { data: stock.debtHistory, color: '#f04452' },
-      { data: stock.equityHistory, color: '#00c471' },
-    ], yearLabels);
+    const active = document.querySelector('.tab-btn[data-chart].active')?.dataset.chart;
+    if (active === 'revenue') drawLineChart(revenueCanvas, revenueDatasets, yearLabels);
+    else drawBarChart(balanceCanvas, balanceDatasets, yearLabels);
   });
 });
 
