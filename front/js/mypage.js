@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeader('');
   initMenu();
   loadProfile();
+  loadWatchlist();
+  loadJournal();
   initProfileForm();
   initPasswordForm();
   initLogout();
@@ -177,6 +179,83 @@ function initWithdraw() {
       setTimeout(() => { window.location.href = 'index.html'; }, 2500);
     }
   });
+}
+
+// ── 관심종목 ───────────────────────────────────────
+async function loadWatchlist() {
+  const tbody = document.getElementById('watchlist-tbody');
+  const table = document.getElementById('watchlist-table');
+  const empty = document.getElementById('watchlist-empty');
+
+  const res = await authFetch('/api/favorites');
+  if (!res) return;
+  const data = await res.json();
+
+  if (!data.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  tbody.innerHTML = data.map(s => {
+    const price = Number(s.mkp || 0).toLocaleString('ko-KR');
+    const rate = Number(s.flt_rt || 0);
+    const cls = rate > 0 ? 'positive' : rate < 0 ? 'negative' : '';
+    const sign = rate > 0 ? '+' : '';
+    return `<tr>
+      <td><button class="fav-remove-btn active" data-code="${s.stock_code}">★</button></td>
+      <td class="td-name">${s.corp_name}</td>
+      <td>${price}원</td>
+      <td class="${cls}">${sign}${rate}%</td>
+    </tr>`;
+  }).join('');
+
+  table.style.display = 'table';
+
+  tbody.querySelectorAll('.fav-remove-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const code = btn.dataset.code;
+      const removeRes = await authFetch(`/api/favorites/${encodeURIComponent(code)}`, { method: 'DELETE' });
+      if (removeRes && removeRes.ok) {
+        table.style.display = 'none';
+        empty.style.display = 'none';
+        tbody.innerHTML = '';
+        loadWatchlist();
+      }
+    });
+  });
+}
+
+// ── 투자일지 ───────────────────────────────────────
+async function loadJournal() {
+  const tbody = document.getElementById('journal-tbody');
+  const table = document.getElementById('journal-table');
+  const empty = document.getElementById('journal-empty');
+
+  const res = await authFetch('/api/journal?category=hold&page=0');
+  if (!res) return;
+  const data = await res.json();
+  const items = data.content || [];
+
+  if (!items.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  tbody.innerHTML = items.map(s => {
+    const qty = s.holdingQty || 0;
+    const currentPrice = s.currentPrice || 0;
+    const pnl = currentPrice * qty - (s.usedAmount || 0);
+    const cls = pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : '';
+    const sign = pnl > 0 ? '+' : '';
+    return `<tr>
+      <td class="td-name">${s.corpName}</td>
+      <td>${qty.toLocaleString('ko-KR')}주</td>
+      <td>${currentPrice.toLocaleString('ko-KR')}원</td>
+      <td class="${cls}">${sign}${pnl.toLocaleString('ko-KR')}원</td>
+    </tr>`;
+  }).join('');
+
+  table.style.display = 'table';
 }
 
 // ── 폼 결과 알림 표시 ──────────────────────────────
