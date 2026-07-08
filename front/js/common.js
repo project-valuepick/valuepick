@@ -266,13 +266,14 @@ function drawLineChart(canvas, datasets, labels) {
 
   const w = rect.width;
   const h = rect.height;
-  const pad = { top: 20, right: 20, bottom: 36, left: 56 };
+  const pad = { top: 32, right: 20, bottom: 36, left: 56 };
   const chartW = w - pad.left - pad.right;
   const chartH = h - pad.top - pad.bottom;
 
   const allValues = datasets.flatMap((d) => d.data);
-  const maxVal = Math.max(...allValues) * 1.1;
-  const minVal = 0;
+  const maxVal = Math.max(...allValues, 0) * 1.1;
+  const minVal = Math.min(...allValues, 0);
+  const valueRange = (maxVal - minVal) || 1;
 
   ctx.clearRect(0, 0, w, h);
 
@@ -286,7 +287,7 @@ function drawLineChart(canvas, datasets, labels) {
     ctx.moveTo(pad.left, y);
     ctx.lineTo(w - pad.right, y);
     ctx.stroke();
-    const val = maxVal - ((maxVal - minVal) / 4) * i;
+    const val = maxVal - (valueRange / 4) * i;
     ctx.setLineDash([]);
     ctx.fillStyle = '#8b95a1';
     ctx.font = '11px Pretendard, sans-serif';
@@ -295,6 +296,12 @@ function drawLineChart(canvas, datasets, labels) {
     ctx.setLineDash([4, 4]);
   }
   ctx.setLineDash([]);
+
+  // 축 단위 표기 (억원)
+  ctx.fillStyle = '#8b95a1';
+  ctx.font = '11px Pretendard, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('(단위: 억)', pad.left, pad.top - 14);
 
   // x labels
   labels.forEach((label, i) => {
@@ -306,13 +313,13 @@ function drawLineChart(canvas, datasets, labels) {
   });
 
   // lines
-  datasets.forEach((ds) => {
+  datasets.forEach((ds, dsi) => {
     ctx.strokeStyle = ds.color;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ds.data.forEach((val, i) => {
       const x = pad.left + (chartW / (labels.length - 1)) * i;
-      const y = pad.top + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+      const y = pad.top + chartH - ((val - minVal) / valueRange) * chartH;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
@@ -320,7 +327,7 @@ function drawLineChart(canvas, datasets, labels) {
 
     ds.data.forEach((val, i) => {
       const x = pad.left + (chartW / (labels.length - 1)) * i;
-      const y = pad.top + chartH - ((val - minVal) / (maxVal - minVal)) * chartH;
+      const y = pad.top + chartH - ((val - minVal) / valueRange) * chartH;
       ctx.fillStyle = ds.color;
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -339,14 +346,43 @@ function drawBarChart(canvas, datasets, labels) {
 
   const w = rect.width;
   const h = rect.height;
-  const pad = { top: 20, right: 20, bottom: 36, left: 56 };
+  const pad = { top: 32, right: 20, bottom: 36, left: 56 };
   const chartW = w - pad.left - pad.right;
   const chartH = h - pad.top - pad.bottom;
 
   const allValues = datasets.flatMap((d) => d.data);
-  const maxVal = Math.max(...allValues) * 1.1;
+  const maxVal = Math.max(...allValues, 0) * 1.1;
+  const minVal = Math.min(...allValues, 0);
+  const valueRange = (maxVal - minVal) || 1;
+  const zeroY = pad.top + chartH - ((0 - minVal) / valueRange) * chartH;
 
   ctx.clearRect(0, 0, w, h);
+
+  // grid
+  ctx.strokeStyle = '#e5e8eb';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+    const val = maxVal - (valueRange / 4) * i;
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8b95a1';
+    ctx.font = '11px Pretendard, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(val).toLocaleString(), pad.left - 8, y + 4);
+    ctx.setLineDash([4, 4]);
+  }
+  ctx.setLineDash([]);
+
+  // 축 단위 표기 (억원)
+  ctx.fillStyle = '#8b95a1';
+  ctx.font = '11px Pretendard, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('(단위: 억)', pad.left, pad.top - 14);
 
   const groupW = chartW / labels.length;
   const barW = groupW / (datasets.length + 1);
@@ -360,9 +396,10 @@ function drawBarChart(canvas, datasets, labels) {
 
     datasets.forEach((ds, di) => {
       const val = ds.data[i];
-      const barH = (val / maxVal) * chartH;
+      const barTopY = pad.top + chartH - ((val - minVal) / valueRange) * chartH;
+      const y = Math.min(barTopY, zeroY);
+      const barH = Math.abs(barTopY - zeroY);
       const x = pad.left + groupW * i + barW * (di + 0.5);
-      const y = pad.top + chartH - barH;
       ctx.fillStyle = ds.color;
       ctx.beginPath();
       ctx.roundRect(x, y, barW * 0.8, barH, [3, 3, 0, 0]);
@@ -370,3 +407,4 @@ function drawBarChart(canvas, datasets, labels) {
     });
   });
 }
+
