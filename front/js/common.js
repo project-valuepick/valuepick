@@ -86,6 +86,18 @@ function initHeader(activePage) {
       }
     }
   });
+
+  // 뒤로가기로 bfcache에서 페이지가 복원되면 DOMContentLoaded가 재실행되지 않아
+  // 다른 페이지에서 바뀐 관심종목 상태가 별 버튼에 반영되지 않는 문제를 보정
+  window.addEventListener('pageshow', async (e) => {
+    if (!e.persisted) return;
+    await loadFavoriteState();
+    document.querySelectorAll('.favorite-btn[data-favorite-code]').forEach((btn) => {
+      const active = isFavorite(btn.dataset.favoriteCode);
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-label', `관심종목 ${active ? '해제' : '추가'}`);
+    });
+  });
 }
 
 async function authFetch(url, options = {}) {
@@ -175,28 +187,45 @@ async function loadFavoriteState() {
   }
 }
 
-// onDone(code, active) - 토글이 서버까지 반영된 후 호출되는 콜백 (선택)
+// onDone(code, active) - 토글 직후(낙관적 업데이트) 호출되는 콜백 (선택)
+// 서버 응답을 기다리지 않고 UI/캐시를 먼저 갱신해 클릭 반응성을 높이고, 실패 시에만 원상복구함
 async function toggleFavorite(code, btn, onDone) {
   if (!localStorage.getItem('accessToken')) {
     window.location.href = 'login.html';
     return;
   }
   const wasActive = isFavorite(code);
+
+  if (wasActive) {
+    _favoriteCodes.delete(code);
+  } else {
+    _favoriteCodes.add(code);
+  }
+  if (btn) {
+    btn.classList.toggle('active', !wasActive);
+    btn.setAttribute('aria-label', `관심종목 ${!wasActive ? '해제' : '추가'}`);
+  }
+  onDone?.(code, !wasActive);
+
   try {
     if (wasActive) {
       await removeFavorite(code);
-      _favoriteCodes.delete(code);
     } else {
       await addFavorite(code);
-      _favoriteCodes.add(code);
     }
-    if (btn) {
-      btn.classList.toggle('active', !wasActive);
-      btn.setAttribute('aria-label', `관심종목 ${!wasActive ? '해제' : '추가'}`);
-    }
-    onDone?.(code, !wasActive);
   } catch (e) {
     console.error('관심종목 처리 실패:', e);
+    // 서버 반영 실패 시 UI/캐시 원상복구
+    if (wasActive) {
+      _favoriteCodes.add(code);
+    } else {
+      _favoriteCodes.delete(code);
+    }
+    if (btn) {
+      btn.classList.toggle('active', wasActive);
+      btn.setAttribute('aria-label', `관심종목 ${wasActive ? '해제' : '추가'}`);
+    }
+    onDone?.(code, wasActive);
   }
 }
 
