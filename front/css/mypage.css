@@ -372,6 +372,77 @@
   background: #d63040;
 }
 
+/* ── 관심종목 / 투자일지 테이블 ── */
+.btn-more {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-more:hover {
+  text-decoration: underline;
+}
+
+.section-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-sub);
+  margin-left: 6px;
+}
+
+.mypage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.mypage-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.mypage-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+.mypage-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mypage-table .td-name {
+  font-weight: 600;
+}
+
+.mypage-table .positive { color: var(--up); }
+.mypage-table .negative { color: var(--down); }
+
+.fav-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--border);
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.fav-remove-btn.active {
+  color: #f0b429;
+}
+
+.fav-remove-btn:hover {
+  color: #f0b429;
+  opacity: 0.7;
+}
+
 /* ── 반응형 ── */
 @media (max-width: 768px) {
   .mypage-inner {
