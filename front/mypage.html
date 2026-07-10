@@ -68,22 +68,34 @@
       <section class="content-card" id="section-watchlist">
         <div class="content-card-header">
           <h2 class="content-card-title">관심종목</h2>
+          <a class="btn-more" href="favorites.html">전체보기 →</a>
         </div>
-        <div class="empty-state">
-          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="opacity:0.25;margin-bottom:12px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          <p>준비 중입니다.</p>
+        <div class="empty-state" id="watchlist-empty" style="display:none">
+          <p>등록된 관심종목이 없습니다.</p>
         </div>
+        <table class="mypage-table" id="watchlist-table" style="display:none">
+          <thead>
+            <tr><th></th><th>종목명</th><th>현재가</th><th>등락률</th></tr>
+          </thead>
+          <tbody id="watchlist-tbody"></tbody>
+        </table>
       </section>
 
       <!-- 투자일지 -->
       <section class="content-card" id="section-journal" style="display:none">
         <div class="content-card-header">
-          <h2 class="content-card-title">투자일지</h2>
+          <h2 class="content-card-title">투자일지 <span class="section-sub">보유종목</span></h2>
+          <a class="btn-more" href="investment-journal.html">전체보기 →</a>
         </div>
-        <div class="empty-state">
-          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="opacity:0.25;margin-bottom:12px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <p>준비 중입니다.</p>
+        <div class="empty-state" id="journal-empty" style="display:none">
+          <p>보유 중인 종목이 없습니다.</p>
         </div>
+        <table class="mypage-table" id="journal-table" style="display:none">
+          <thead>
+            <tr><th>종목명</th><th>보유주</th><th>현재가</th><th>손익</th></tr>
+          </thead>
+          <tbody id="journal-tbody"></tbody>
+        </table>
       </section>
 
       <!-- 프로필 수정 -->

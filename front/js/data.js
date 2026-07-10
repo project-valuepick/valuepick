@@ -280,9 +280,9 @@ async function fetchStockFull(code) {
     bps:             indicator?.bps ?? null,
     debtRatio:       indicator?.debtRatio ?? null,
     shares:          latestPrice?.lstgStCnt != null ? Number(latestPrice.lstgStCnt).toLocaleString('ko-KR') + '주' : '-',
-    sector:          '-',
+    ceoNm:           company.ceoNm || '-',
+    indutyNm:        company.indutyNm || '-',
     market:          company.corpCls === 'Y' ? '유가증권' : company.corpCls === 'K' ? '코스닥' : '-',
-    listedDate:      '-',
     operatingProfit: hasFinancials ? toEok(byYear.get(years[years.length - 1]).operatingIncome) : 0,
     years,
     revenueHistory:     years.map((y) => toEok(byYear.get(y)?.revenue)),
@@ -309,18 +309,18 @@ async function fetchStockFull(code) {
 // ──────────────────────────────────────────────
 
 async function fetchFavorites() {
-  const res = await authFetch(`${API_BASE}/api/favorites`);
+  const res = await authFetch(`/api/favorites`);
   if (!res.ok) throw new Error(`fetchFavorites failed: ${res.status}`);
   const data = await res.json();
   return data.map(normalizeStock);
 }
 
 async function addFavorite(stockCode) {
-  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
+  const res = await authFetch(`/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'POST' });
   if (!res.ok) throw new Error(`addFavorite failed: ${res.status}`);
 }
 
 async function removeFavorite(stockCode) {
-  const res = await authFetch(`${API_BASE}/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
+  const res = await authFetch(`/api/favorites/${encodeURIComponent(stockCode)}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`removeFavorite failed: ${res.status}`);
 }
