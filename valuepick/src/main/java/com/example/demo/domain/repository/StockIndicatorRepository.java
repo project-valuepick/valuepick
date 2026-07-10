@@ -19,6 +19,7 @@ public interface StockIndicatorRepository extends JpaRepository<StockIndicator, 
             SELECT i.stock_code, i.per, c.corp_name
             FROM STOCK_INDICATOR i
             JOIN COMPANY c ON i.stock_code = c.stock_code
+            WHERE i.per is not null
             ORDER BY i.per ASC
             LIMIT 5
             """,
@@ -29,6 +30,7 @@ public interface StockIndicatorRepository extends JpaRepository<StockIndicator, 
             SELECT i.stock_code, i.pbr, c.corp_name
             FROM STOCK_INDICATOR i
             JOIN COMPANY c ON i.stock_code = c.stock_code
+            WHERE i.pbr is not null
             ORDER BY i.pbr ASC
             LIMIT 5
             """,
@@ -49,6 +51,7 @@ public interface StockIndicatorRepository extends JpaRepository<StockIndicator, 
             SELECT i.stock_code, i.dividend_yield, c.corp_name
             FROM STOCK_INDICATOR i
             JOIN COMPANY c ON i.stock_code = c.stock_code
+            WHERE i.dividend_yield is not null
             ORDER BY i.dividend_yield DESC 
             LIMIT 5
             """,

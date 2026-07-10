@@ -51,7 +51,7 @@ public class InfoController {
 
     // 환율
     @GetMapping(value = "/exchange",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ExchangeDto> getExchange() throws Exception {
+    public ResponseEntity<Map<String,Object>> getExchange() throws Exception {
         return ResponseEntity.ok(simpleInfoService.getExchange());
     }
 

@@ -32,6 +32,6 @@ public interface SimpleInfoService {
     //코스피
     MarketIndexDto getKOSPI() throws Exception;
     //환율
-    ExchangeDto getExchange() throws Exception;
+    Map<String,Object> getExchange() throws Exception;
     //코스닥 -- 생략
 }
