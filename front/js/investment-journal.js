@@ -108,12 +108,11 @@ async function fetchPositionDetail(journalId) {
 // ─── 렌더링 ────────────────────────────────────────────────────────────────────
 
 const COLUMN_SETS = {
-  all:    ['제목', '종목', '상태', '시간'],
-  shared: ['제목', '종목', '상태', '시간'],
-  buy:    ['제목', '종목', '매수일', '매수주', '매수가', '공유'],
-  sell:   ['제목', '종목', '매도일', '매도주', '매도가', '공유'],
-  hold:   ['제목', '종목', '기간', '보유주', '현재시세', '평가금액', '공유'],
-  deal:   ['제목', '종목', '기간', '손익', '공유'],
+  all:  ['제목', '종목', '상태', '시간'],
+  buy:  ['종목', '매수일', '매수주', '매수가'],
+  sell: ['종목', '매도일', '매도주', '매도가'],
+  hold: ['제목', '종목', '기간', '보유주', '현재시세', '평가금액'],
+  deal: ['제목', '종목', '기간', '손익'],
 };
 
 function getFields(item) {
@@ -145,7 +144,7 @@ function getFields(item) {
   return {
     type: 'position', id: item.id, journalId: item.id,
     title: item.title, stockCode: item.stockCode, corpName: item.corpName,
-    stateLabel: closed ? '거래' : '보유',
+    stateLabel: closed ? '거래완료' : '보유',
     stateClass: closed ? 'closed' : 'holding',
     dateValue: null,
     periodValue: `${formatShortDate(item.firstBuyAt)} ~ ${formatShortDate(periodEnd)}`,
@@ -175,7 +174,6 @@ function getCellValue(column, f) {
     case '현재시세': return f.currentPrice != null ? formatWon(f.currentPrice) : '-';
     case '평가금액': return f.valuation != null ? formatWon(f.valuation) : '-';
     case '손익':    return f.pnl != null ? `${f.pnl >= 0 ? '+' : ''}${formatWon(f.pnl)}` : '-';
-    case '공유':    return `<span class="chip ${f.isShared ? 'shared' : 'private'}">${f.isShared ? '공유' : '비공개'}</span>`;
     default:       return '';
   }
 }
@@ -204,22 +202,24 @@ function render() {
 
   listEl.innerHTML = rows.map(item => {
     const f = getFields(item);
-    const metricCols = columns.filter(c => !['제목', '종목', '상태', '공유'].includes(c));
+    const metricCols = columns.filter(c => !['제목', '종목', '상태'].includes(c));
     const metrics = metricCols.map(col => `
       <div class="metric-item">
         <div class="metric-label">${col}</div>
         <div class="metric-value">${getCellValue(col, f)}</div>
       </div>`).join('');
+    const headTitle = f.type === 'position'
+      ? `<h2 class="journal-title">${f.title}</h2>`
+      : `<h2 class="journal-title">${f.corpName}</h2>`;
     return `
-      <article class="journal-card" data-id="${f.id}" data-kind="${f.type}" role="button" tabindex="0" aria-label="${f.title} 상세 보기">
+      <article class="journal-card" data-id="${f.id}" data-kind="${f.type}" role="button" tabindex="0" aria-label="${f.corpName} 상세 보기">
         <div class="journal-card-head">
           <div>
-            <h2 class="journal-title">${f.title}</h2>
+            ${headTitle}
             <p class="meta">${f.corpName}(${f.stockCode || '-'})</p>
           </div>
           <div class="chip-group">
             <span class="chip ${f.stateClass}">${f.stateLabel}</span>
-            <span class="chip ${f.isShared ? 'shared' : 'private'}">${f.isShared ? '공유' : '비공개'}</span>
           </div>
         </div>
         <div class="journal-metrics">${metrics}</div>
@@ -303,6 +303,7 @@ function closeActionModal() {
 
 async function renderDetailModal() {
   document.getElementById('detailBackBtn').style.display = detailStack.length ? 'inline-block' : 'none';
+  document.querySelector('.detail-title-edit').style.display = '';
   document.getElementById('sellForm').classList.add('hidden');
   document.getElementById('sellForm').reset();
   document.getElementById('addBuyForm').classList.add('hidden');
@@ -329,7 +330,7 @@ function findListItem(kind, id) {
 function renderBuyDetail() {
   const item = findListItem('buy', currentDetail.id);
   if (!item) { closeActionModal(); return; }
-  document.getElementById('detailTitleInput').value = item.title;
+  document.querySelector('.detail-title-edit').style.display = 'none';
   document.getElementById('actionMeta').innerHTML = `
     <div class="detail-block">
       <p class="meta">종목: ${item.corpName}(${item.stockCode || '-'})</p>
@@ -337,8 +338,6 @@ function renderBuyDetail() {
       <p class="meta">매수주: ${formatShares(item.quantity)}</p>
       <p class="meta">매수 당시 주가: ${formatWon(item.price)}</p>
     </div>`;
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = item.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = 'none';
   document.getElementById('openSellFormBtn').style.display = 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -347,7 +346,7 @@ function renderBuyDetail() {
 function renderSellDetail() {
   const item = findListItem('sell', currentDetail.id);
   if (!item) { closeActionModal(); return; }
-  document.getElementById('detailTitleInput').value = item.title;
+  document.querySelector('.detail-title-edit').style.display = 'none';
   document.getElementById('actionMeta').innerHTML = `
     <div class="detail-block">
       <p class="meta">종목: ${item.corpName}(${item.stockCode || '-'})</p>
@@ -355,8 +354,6 @@ function renderSellDetail() {
       <p class="meta">매도주: ${formatShares(item.quantity)}</p>
       <p class="meta">매도 당시 주가: ${formatWon(item.price)}</p>
     </div>`;
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = item.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = 'none';
   document.getElementById('openSellFormBtn').style.display = 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -425,8 +422,6 @@ async function renderPositionDetail() {
       <button class="btn-outline" id="positionNoteSaveBtn" type="button">메모 저장</button>
     </div>`;
 
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = d.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = !closed ? 'inline-block' : 'none';
   document.getElementById('openSellFormBtn').style.display = !closed && qty > 0 ? 'inline-block' : 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -464,7 +459,7 @@ function renderRecordSection(kind, records) {
   const itemsHtml = pageItems.map(item => {
     const dateVal = kind === 'buy' ? item.buyAt : item.sellAt;
     return `<div class="record-row" data-kind="${kind}" data-id="${item.id}">
-      <strong>${item.title}</strong> · ${formatWon(item.price)} · ${formatShares(item.quantity)} · 총 ${formatWon(item.price * item.quantity)} · ${formatDateTime(dateVal)}
+      ${formatWon(item.price)} · ${formatShares(item.quantity)} · 총 ${formatWon(item.price * item.quantity)} · ${formatDateTime(dateVal)}
     </div>`;
   }).join('');
 
@@ -659,29 +654,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ── 공유 토글 ──
-  document.getElementById('toggleShareBtn').addEventListener('click', async () => {
-    if (!currentDetail) return;
-    const item = currentDetail.kind === 'position'
-      ? positionDetailData
-      : findListItem(currentDetail.kind, currentDetail.id);
-    if (!item) return;
-
-    if (!item.isShared) {
-      const ok = window.confirm('공유할까요?');
-      if (!ok) return;
-    }
-
-    const result = await apiFetch(`/api/journal/${currentDetail.kind}/${currentDetail.id}/share`, { method: 'PATCH' });
-    if (result !== undefined) {
-      if (currentDetail.kind === 'position' && positionDetailData) {
-        positionDetailData.isShared = !positionDetailData.isShared;
-        renderDetailModal();
-      }
-      fetchList();
-    }
-  });
-
   // ── 삭제 ──
   document.getElementById('deleteJournalBtn').addEventListener('click', async () => {
     if (!currentDetail) return;
@@ -715,17 +687,16 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (!currentDetail || currentDetail.kind !== 'position') return;
     const data = new FormData(document.getElementById('addBuyForm'));
-    const title = String(data.get('addBuyTitle') || '').trim();
     const buyAt = String(data.get('addBuyAt') || '').trim();
     const quantity = Number(data.get('addBuyQuantity') || 0);
     const price = Number(data.get('addBuyPrice') || 0);
-    if (!title || !buyAt || !quantity || !price) {
-      window.alert('제목, 매수 일시, 매수 수량, 매수 당시 주가를 모두 입력해주세요.');
+    if (!buyAt || !quantity || !price) {
+      window.alert('매수 일시, 매수 수량, 매수 당시 주가를 모두 입력해주세요.');
       return;
     }
     const result = await apiFetch(`/api/journal/${currentDetail.id}/buy`, {
       method: 'POST',
-      body: JSON.stringify({ title, buyAt: new Date(buyAt).toISOString(), price, quantity }),
+      body: JSON.stringify({ buyAt: new Date(buyAt).toISOString(), price, quantity }),
     });
     if (result !== undefined) {
       positionDetailData = null;
@@ -750,17 +721,16 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (!currentDetail || currentDetail.kind !== 'position') return;
     const data = new FormData(document.getElementById('sellForm'));
-    const title = String(data.get('sellTitle') || '').trim();
     const sellAt = String(data.get('sellAt') || '').trim();
     const quantity = Number(data.get('sellQuantity') || 0);
     const price = Number(data.get('sellPrice') || 0);
-    if (!title || !sellAt || !quantity || !price) {
-      window.alert('제목, 매도 일시, 매도 수량, 매도 당시 주가를 모두 입력해주세요.');
+    if (!sellAt || !quantity || !price) {
+      window.alert('매도 일시, 매도 수량, 매도 당시 주가를 모두 입력해주세요.');
       return;
     }
     const result = await apiFetch(`/api/journal/${currentDetail.id}/sell`, {
       method: 'POST',
-      body: JSON.stringify({ title, sellAt: new Date(sellAt).toISOString(), price, quantity }),
+      body: JSON.stringify({ sellAt: new Date(sellAt).toISOString(), price, quantity }),
     });
     if (result !== undefined) {
       positionDetailData = null;
