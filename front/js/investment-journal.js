@@ -105,6 +105,53 @@ async function fetchPositionDetail(journalId) {
   return await apiFetch(`/api/journal/position/${journalId}`);
 }
 
+// 배경 갱신용 — 실패해도 alert 띄우지 않고 조용히 무시
+async function apiFetchSilent(url) {
+  try {
+    const res = await authFetch(url);
+    if (!res || !res.ok) return null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 현재가/평가금액/손익 등 시세 관련 값만 in-place로 갱신 (전체 재렌더링 없이 깜빡임 방지)
+// 화면에 없는 항목이 있으면 스킵할 뿐, 전체 실패로 취급하지 않음
+function patchListPrices(items) {
+  const columns = COLUMN_SETS[activeCategory] || COLUMN_SETS.all;
+  const priceCols = columns.filter(col => ['현재시세', '평가금액', '손익'].includes(col));
+  if (priceCols.length === 0) return;
+
+  const tableBodyEl = document.getElementById('journalTableBody');
+  const listEl = document.getElementById('journalList');
+
+  items.forEach(item => {
+    const f = getFields(item);
+    const row = tableBodyEl.querySelector(`tr[data-id="${f.id}"][data-kind="${f.type}"]`);
+    const card = listEl.querySelector(`.journal-card[data-id="${f.id}"][data-kind="${f.type}"]`);
+
+    priceCols.forEach(col => {
+      const value = getCellValue(col, f);
+      const cell = row && row.querySelector(`td[data-col="${col}"]`);
+      if (cell) cell.innerHTML = value;
+      const metricValueEl = card && card.querySelector(`.metric-item[data-col="${col}"] .metric-value`);
+      if (metricValueEl) metricValueEl.innerHTML = value;
+    });
+  });
+}
+
+async function refreshListPrices() {
+  const params = new URLSearchParams({ category: activeCategory, q: query, page: currentPage });
+  if (fromDate) params.set('from', fromDate);
+  if (toDate) params.set('to', toDate);
+  const data = await apiFetchSilent(`/api/journal?${params}`);
+  if (!data) return;
+  listData = data;
+  patchListPrices(data.content || []);
+}
+
 // ─── 렌더링 ────────────────────────────────────────────────────────────────────
 
 const COLUMN_SETS = {
@@ -159,7 +206,11 @@ function getFields(item) {
 
 function getCellValue(column, f) {
   switch (column) {
-    case '제목':    return `<div class="td-name">${f.title}</div>`;
+    case '제목': {
+      if (f.type === 'position') return `<div class="td-name">${f.title}</div>`;
+      const action = f.type === 'buy' ? '매수' : '매도';
+      return `<div class="td-name">${f.dateValue} ${f.corpName} ${action}</div>`;
+    }
     case '종목':    return `<div class="td-name">${f.corpName}</div><div class="td-code">${f.stockCode || '-'}</div>`;
     case '상태':    return `<span class="chip ${f.stateClass}">${f.stateLabel}</span>`;
     case '시간':    return f.periodValue || f.dateValue || '-';
@@ -196,7 +247,7 @@ function render() {
 
   tableBodyEl.innerHTML = rows.map(item => {
     const f = getFields(item);
-    const cells = columns.map(col => `<td>${getCellValue(col, f)}</td>`).join('');
+    const cells = columns.map(col => `<td data-col="${col}">${getCellValue(col, f)}</td>`).join('');
     return `<tr data-id="${f.id}" data-kind="${f.type}">${cells}</tr>`;
   }).join('');
 
@@ -204,7 +255,7 @@ function render() {
     const f = getFields(item);
     const metricCols = columns.filter(c => !['제목', '종목', '상태'].includes(c));
     const metrics = metricCols.map(col => `
-      <div class="metric-item">
+      <div class="metric-item" data-col="${col}">
         <div class="metric-label">${col}</div>
         <div class="metric-value">${getCellValue(col, f)}</div>
       </div>`).join('');
@@ -388,9 +439,9 @@ async function renderPositionDetail() {
       <div class="detail-block">
         <h3>보유 현황</h3>
         <p class="meta">보유주 수: ${formatShares(qty)}</p>
-        <p class="meta">현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}</p>
-        <p class="meta">현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}</p>
-        <p class="meta">현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}</p>
+        <p class="meta" id="detailCurrentPrice">현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}</p>
+        <p class="meta" id="detailSellAllNow">현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}</p>
+        <p class="meta" id="detailCurrentPnl">현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}</p>
         <p class="meta">사용 금액: ${formatWon(d.usedAmount)}</p>
         <p class="meta">최초 매수 기록: ${formatDateTime(d.firstBuyAt)}</p>
       </div>`;
@@ -440,6 +491,37 @@ async function renderPositionDetail() {
       window.alert('메모가 저장되었습니다.');
     }
   });
+}
+
+// 상세모달이 보유(position) 상세를 띄우고 있을 때 현재가 관련 값만 in-place로 갱신
+async function refreshDetailPrice() {
+  if (!currentDetail || currentDetail.kind !== 'position' || !positionDetailData) return;
+  const fresh = await apiFetchSilent(`/api/journal/position/${currentDetail.id}`);
+  if (!fresh) return;
+
+  positionDetailData.currentPrice = fresh.currentPrice;
+  positionDetailData.holdingQty = fresh.holdingQty;
+  positionDetailData.usedAmount = fresh.usedAmount;
+  positionDetailData.soldAmount = fresh.soldAmount;
+  positionDetailData.pnl = fresh.pnl;
+  if (positionDetailData.state === '완료') return;
+
+  const qty = positionDetailData.holdingQty || 0;
+  const currentPrice = positionDetailData.currentPrice;
+  const sellAllNow = qty * (currentPrice || 0);
+  const currentPnl = (positionDetailData.soldAmount || 0) + sellAllNow - (positionDetailData.usedAmount || 0);
+
+  const priceEl = document.getElementById('detailCurrentPrice');
+  const sellAllEl = document.getElementById('detailSellAllNow');
+  const pnlEl = document.getElementById('detailCurrentPnl');
+  if (priceEl) priceEl.textContent = `현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}`;
+  if (sellAllEl) sellAllEl.textContent = `현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}`;
+  if (pnlEl) pnlEl.textContent = `현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}`;
+}
+
+async function refreshPrices() {
+  await refreshListPrices();
+  await refreshDetailPrice();
 }
 
 function renderRecordSection(kind, records) {
@@ -519,6 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
   filterToDateEl.value = toDate;
 
   fetchList();
+
+  // 10초마다 현재가 관련 값(현재시세/평가금액/손익, 상세모달 현재가)만 배경 갱신
+  setInterval(refreshPrices, 10000);
 
   // ── 탭 ──
   document.getElementById('categoryTabs').addEventListener('click', e => {
