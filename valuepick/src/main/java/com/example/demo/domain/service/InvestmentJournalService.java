@@ -50,7 +50,7 @@ public class InvestmentJournalService {
 
         if (buyCategories.contains(category)) {
             buyRepository.findByUserOrderByBuyAtDesc(user).stream()
-                    .filter(b -> matchesSearch(b.getTitle(), b.getCorpName(), lq))
+                    .filter(b -> matchesSearch(b.getPosition().getTitle(), b.getCorpName(), lq))
                     .filter(b -> matchesDate(b.getBuyAt() != null ? b.getBuyAt().toLocalDate() : null, from, to))
                     .filter(b -> !"shared".equals(category) || Boolean.TRUE.equals(b.getIsShared()))
                     .map(this::toBuyItem)
@@ -59,7 +59,7 @@ public class InvestmentJournalService {
 
         if (sellCategories.contains(category)) {
             sellRepository.findByUserOrderBySellAtDesc(user).stream()
-                    .filter(s -> matchesSearch(s.getTitle(), s.getCorpName(), lq))
+                    .filter(s -> matchesSearch(s.getPosition().getTitle(), s.getCorpName(), lq))
                     .filter(s -> matchesDate(s.getSellAt() != null ? s.getSellAt().toLocalDate() : null, from, to))
                     .filter(s -> !"shared".equals(category) || Boolean.TRUE.equals(s.getIsShared()))
                     .map(this::toSellItem)
@@ -179,7 +179,6 @@ public class InvestmentJournalService {
         InvestmentBuy buy = InvestmentBuy.builder()
                 .user(user)
                 .position(position)
-                .title(req.getTitle())
                 .stockCode(stockCode)
                 .corpName(corpName)
                 .buyAt(req.getBuyAt())
@@ -201,7 +200,6 @@ public class InvestmentJournalService {
         InvestmentBuy buy = InvestmentBuy.builder()
                 .user(user)
                 .position(position)
-                .title(req.getTitle())
                 .stockCode(position.getStockCode())
                 .corpName(position.getCorpName())
                 .buyAt(req.getBuyAt())
@@ -230,7 +228,6 @@ public class InvestmentJournalService {
         InvestmentSell sell = InvestmentSell.builder()
                 .user(user)
                 .position(position)
-                .title(req.getTitle())
                 .stockCode(position.getStockCode())
                 .corpName(position.getCorpName())
                 .sellAt(req.getSellAt())
@@ -254,16 +251,6 @@ public class InvestmentJournalService {
         if (title == null || title.isBlank()) throw new IllegalArgumentException("제목을 입력해주세요.");
 
         switch (type) {
-            case "buy" -> {
-                InvestmentBuy buy = findBuy(id);
-                checkOwnership(buy.getUser(), user);
-                buy.updateTitle(title);
-            }
-            case "sell" -> {
-                InvestmentSell sell = findSell(id);
-                checkOwnership(sell.getUser(), user);
-                sell.updateTitle(title);
-            }
             case "position" -> {
                 InvestmentPosition position = findPosition(id);
                 checkOwnership(position.getUser(), user);
@@ -479,7 +466,7 @@ public class InvestmentJournalService {
                 .type("buy")
                 .id(b.getId())
                 .journalId(b.getPosition().getId())
-                .title(b.getTitle())
+                .title(b.getPosition().getTitle())
                 .stockCode(b.getStockCode())
                 .corpName(b.getCorpName())
                 .isShared(b.getIsShared())
@@ -494,7 +481,7 @@ public class InvestmentJournalService {
                 .type("sell")
                 .id(s.getId())
                 .journalId(s.getPosition().getId())
-                .title(s.getTitle())
+                .title(s.getPosition().getTitle())
                 .stockCode(s.getStockCode())
                 .corpName(s.getCorpName())
                 .isShared(s.getIsShared())

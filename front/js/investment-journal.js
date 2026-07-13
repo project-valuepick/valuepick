@@ -641,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── 제목 수정 ──
   document.getElementById('detailTitleSaveBtn').addEventListener('click', async () => {
-    if (!currentDetail) return;
+    if (!currentDetail || currentDetail.kind !== 'position') return;
     const newTitle = document.getElementById('detailTitleInput').value.trim();
     if (!newTitle) { window.alert('제목을 입력해주세요.'); return; }
     const result = await apiFetch(`/api/journal/${currentDetail.kind}/${currentDetail.id}/title`, {

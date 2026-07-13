@@ -24,9 +24,6 @@ public class InvestmentSell {
     @JoinColumn(name = "position_id")
     private InvestmentPosition position;
 
-    @Column(name = "title")
-    private String title;
-
     @Column(name = "stock_code")
     private String stockCode;
 
@@ -48,6 +45,5 @@ public class InvestmentSell {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    public void updateTitle(String title) { this.title = title; }
     public void updateShared(Boolean isShared) { this.isShared = isShared; }
 }

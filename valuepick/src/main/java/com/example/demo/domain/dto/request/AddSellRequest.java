@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AddSellRequest {
 
-    private String title;
     private LocalDateTime sellAt;
     private Long price;
     private Integer quantity;
