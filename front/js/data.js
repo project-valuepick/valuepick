@@ -122,12 +122,16 @@ async function fetchMarketIndices() {
   }
 
   if (exchangeRes.status === 'fulfilled' && exchangeRes.value.ok) {
-    const e = await exchangeRes.value.json();
-    result.push({
-      name:         `${e.curUnit || 'USD'} (${e.country || ''})`,
-      value:        (Number(e.dealBasR) || 0).toLocaleString('ko-KR') + '원',
-      changeRate:   Math.round(Number(e.changeRate)*100)/100   || 0,
-      changeAmount: Math.round(Number(e.changeAmount)*100)/100 || 0,
+    const ex = await exchangeRes.value.json();
+    ['USD', 'JPY(100)', 'CNH'].forEach((key) => {
+      const e = ex[key];
+      if (!e) return;
+      result.push({
+        name:         `${e.curUnit || key} (${e.country || ''})`,
+        value:        (Number(e.dealBasR) || 0).toLocaleString('ko-KR') + '원',
+        changeRate:   Math.round(Number(e.changeRate)*100)/100   || 0,
+        changeAmount: Math.round(Number(e.changeAmount)*100)/100 || 0,
+      });
     });
   }
 

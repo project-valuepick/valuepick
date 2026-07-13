@@ -13,7 +13,6 @@ public class InvestmentSellDto {
 
     private Long id;
     private Long positionId;
-    private String title;
     private String stockCode;
     private String corpName;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -28,7 +27,6 @@ public class InvestmentSellDto {
         return InvestmentSellDto.builder()
                 .id(entity.getId())
                 .positionId(entity.getPosition().getId())
-                .title(entity.getTitle())
                 .stockCode(entity.getStockCode())
                 .corpName(entity.getCorpName())
                 .sellAt(entity.getSellAt())

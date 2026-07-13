@@ -105,15 +105,61 @@ async function fetchPositionDetail(journalId) {
   return await apiFetch(`/api/journal/position/${journalId}`);
 }
 
+// 배경 갱신용 — 실패해도 alert 띄우지 않고 조용히 무시
+async function apiFetchSilent(url) {
+  try {
+    const res = await authFetch(url);
+    if (!res || !res.ok) return null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 현재가/평가금액/손익 등 시세 관련 값만 in-place로 갱신 (전체 재렌더링 없이 깜빡임 방지)
+// 화면에 없는 항목이 있으면 스킵할 뿐, 전체 실패로 취급하지 않음
+function patchListPrices(items) {
+  const columns = COLUMN_SETS[activeCategory] || COLUMN_SETS.all;
+  const priceCols = columns.filter(col => ['현재시세', '평가금액', '손익'].includes(col));
+  if (priceCols.length === 0) return;
+
+  const tableBodyEl = document.getElementById('journalTableBody');
+  const listEl = document.getElementById('journalList');
+
+  items.forEach(item => {
+    const f = getFields(item);
+    const row = tableBodyEl.querySelector(`tr[data-id="${f.id}"][data-kind="${f.type}"]`);
+    const card = listEl.querySelector(`.journal-card[data-id="${f.id}"][data-kind="${f.type}"]`);
+
+    priceCols.forEach(col => {
+      const value = getCellValue(col, f);
+      const cell = row && row.querySelector(`td[data-col="${col}"]`);
+      if (cell) cell.innerHTML = value;
+      const metricValueEl = card && card.querySelector(`.metric-item[data-col="${col}"] .metric-value`);
+      if (metricValueEl) metricValueEl.innerHTML = value;
+    });
+  });
+}
+
+async function refreshListPrices() {
+  const params = new URLSearchParams({ category: activeCategory, q: query, page: currentPage });
+  if (fromDate) params.set('from', fromDate);
+  if (toDate) params.set('to', toDate);
+  const data = await apiFetchSilent(`/api/journal?${params}`);
+  if (!data) return;
+  listData = data;
+  patchListPrices(data.content || []);
+}
+
 // ─── 렌더링 ────────────────────────────────────────────────────────────────────
 
 const COLUMN_SETS = {
-  all:    ['제목', '종목', '상태', '시간'],
-  shared: ['제목', '종목', '상태', '시간'],
-  buy:    ['제목', '종목', '매수일', '매수주', '매수가', '공유'],
-  sell:   ['제목', '종목', '매도일', '매도주', '매도가', '공유'],
-  hold:   ['제목', '종목', '기간', '보유주', '현재시세', '평가금액', '공유'],
-  deal:   ['제목', '종목', '기간', '손익', '공유'],
+  all:  ['제목', '종목', '상태', '시간'],
+  buy:  ['종목', '매수일', '매수주', '매수가'],
+  sell: ['종목', '매도일', '매도주', '매도가'],
+  hold: ['제목', '종목', '기간', '보유주', '현재시세', '평가금액'],
+  deal: ['제목', '종목', '기간', '손익'],
 };
 
 function getFields(item) {
@@ -145,7 +191,7 @@ function getFields(item) {
   return {
     type: 'position', id: item.id, journalId: item.id,
     title: item.title, stockCode: item.stockCode, corpName: item.corpName,
-    stateLabel: closed ? '거래' : '보유',
+    stateLabel: closed ? '거래완료' : '보유',
     stateClass: closed ? 'closed' : 'holding',
     dateValue: null,
     periodValue: `${formatShortDate(item.firstBuyAt)} ~ ${formatShortDate(periodEnd)}`,
@@ -160,7 +206,11 @@ function getFields(item) {
 
 function getCellValue(column, f) {
   switch (column) {
-    case '제목':    return `<div class="td-name">${f.title}</div>`;
+    case '제목': {
+      if (f.type === 'position') return `<div class="td-name">${f.title}</div>`;
+      const action = f.type === 'buy' ? '매수' : '매도';
+      return `<div class="td-name">${f.dateValue} ${f.corpName} ${action}</div>`;
+    }
     case '종목':    return `<div class="td-name">${f.corpName}</div><div class="td-code">${f.stockCode || '-'}</div>`;
     case '상태':    return `<span class="chip ${f.stateClass}">${f.stateLabel}</span>`;
     case '시간':    return f.periodValue || f.dateValue || '-';
@@ -175,7 +225,6 @@ function getCellValue(column, f) {
     case '현재시세': return f.currentPrice != null ? formatWon(f.currentPrice) : '-';
     case '평가금액': return f.valuation != null ? formatWon(f.valuation) : '-';
     case '손익':    return f.pnl != null ? `${f.pnl >= 0 ? '+' : ''}${formatWon(f.pnl)}` : '-';
-    case '공유':    return `<span class="chip ${f.isShared ? 'shared' : 'private'}">${f.isShared ? '공유' : '비공개'}</span>`;
     default:       return '';
   }
 }
@@ -198,28 +247,30 @@ function render() {
 
   tableBodyEl.innerHTML = rows.map(item => {
     const f = getFields(item);
-    const cells = columns.map(col => `<td>${getCellValue(col, f)}</td>`).join('');
+    const cells = columns.map(col => `<td data-col="${col}">${getCellValue(col, f)}</td>`).join('');
     return `<tr data-id="${f.id}" data-kind="${f.type}">${cells}</tr>`;
   }).join('');
 
   listEl.innerHTML = rows.map(item => {
     const f = getFields(item);
-    const metricCols = columns.filter(c => !['제목', '종목', '상태', '공유'].includes(c));
+    const metricCols = columns.filter(c => !['제목', '종목', '상태'].includes(c));
     const metrics = metricCols.map(col => `
-      <div class="metric-item">
+      <div class="metric-item" data-col="${col}">
         <div class="metric-label">${col}</div>
         <div class="metric-value">${getCellValue(col, f)}</div>
       </div>`).join('');
+    const headTitle = f.type === 'position'
+      ? `<h2 class="journal-title">${f.title}</h2>`
+      : `<h2 class="journal-title">${f.corpName}</h2>`;
     return `
-      <article class="journal-card" data-id="${f.id}" data-kind="${f.type}" role="button" tabindex="0" aria-label="${f.title} 상세 보기">
+      <article class="journal-card" data-id="${f.id}" data-kind="${f.type}" role="button" tabindex="0" aria-label="${f.corpName} 상세 보기">
         <div class="journal-card-head">
           <div>
-            <h2 class="journal-title">${f.title}</h2>
+            ${headTitle}
             <p class="meta">${f.corpName}(${f.stockCode || '-'})</p>
           </div>
           <div class="chip-group">
             <span class="chip ${f.stateClass}">${f.stateLabel}</span>
-            <span class="chip ${f.isShared ? 'shared' : 'private'}">${f.isShared ? '공유' : '비공개'}</span>
           </div>
         </div>
         <div class="journal-metrics">${metrics}</div>
@@ -303,6 +354,7 @@ function closeActionModal() {
 
 async function renderDetailModal() {
   document.getElementById('detailBackBtn').style.display = detailStack.length ? 'inline-block' : 'none';
+  document.querySelector('.detail-title-edit').style.display = '';
   document.getElementById('sellForm').classList.add('hidden');
   document.getElementById('sellForm').reset();
   document.getElementById('addBuyForm').classList.add('hidden');
@@ -329,7 +381,7 @@ function findListItem(kind, id) {
 function renderBuyDetail() {
   const item = findListItem('buy', currentDetail.id);
   if (!item) { closeActionModal(); return; }
-  document.getElementById('detailTitleInput').value = item.title;
+  document.querySelector('.detail-title-edit').style.display = 'none';
   document.getElementById('actionMeta').innerHTML = `
     <div class="detail-block">
       <p class="meta">종목: ${item.corpName}(${item.stockCode || '-'})</p>
@@ -337,8 +389,6 @@ function renderBuyDetail() {
       <p class="meta">매수주: ${formatShares(item.quantity)}</p>
       <p class="meta">매수 당시 주가: ${formatWon(item.price)}</p>
     </div>`;
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = item.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = 'none';
   document.getElementById('openSellFormBtn').style.display = 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -347,7 +397,7 @@ function renderBuyDetail() {
 function renderSellDetail() {
   const item = findListItem('sell', currentDetail.id);
   if (!item) { closeActionModal(); return; }
-  document.getElementById('detailTitleInput').value = item.title;
+  document.querySelector('.detail-title-edit').style.display = 'none';
   document.getElementById('actionMeta').innerHTML = `
     <div class="detail-block">
       <p class="meta">종목: ${item.corpName}(${item.stockCode || '-'})</p>
@@ -355,8 +405,6 @@ function renderSellDetail() {
       <p class="meta">매도주: ${formatShares(item.quantity)}</p>
       <p class="meta">매도 당시 주가: ${formatWon(item.price)}</p>
     </div>`;
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = item.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = 'none';
   document.getElementById('openSellFormBtn').style.display = 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -391,9 +439,9 @@ async function renderPositionDetail() {
       <div class="detail-block">
         <h3>보유 현황</h3>
         <p class="meta">보유주 수: ${formatShares(qty)}</p>
-        <p class="meta">현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}</p>
-        <p class="meta">현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}</p>
-        <p class="meta">현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}</p>
+        <p class="meta" id="detailCurrentPrice">현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}</p>
+        <p class="meta" id="detailSellAllNow">현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}</p>
+        <p class="meta" id="detailCurrentPnl">현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}</p>
         <p class="meta">사용 금액: ${formatWon(d.usedAmount)}</p>
         <p class="meta">최초 매수 기록: ${formatDateTime(d.firstBuyAt)}</p>
       </div>`;
@@ -425,8 +473,6 @@ async function renderPositionDetail() {
       <button class="btn-outline" id="positionNoteSaveBtn" type="button">메모 저장</button>
     </div>`;
 
-  document.getElementById('toggleShareBtn').style.display = 'inline-block';
-  document.getElementById('toggleShareBtn').textContent = d.isShared ? '공유 해제' : '공유하기';
   document.getElementById('openBuyFormBtn').style.display = !closed ? 'inline-block' : 'none';
   document.getElementById('openSellFormBtn').style.display = !closed && qty > 0 ? 'inline-block' : 'none';
   document.getElementById('deleteJournalBtn').style.display = 'inline-block';
@@ -447,6 +493,37 @@ async function renderPositionDetail() {
   });
 }
 
+// 상세모달이 보유(position) 상세를 띄우고 있을 때 현재가 관련 값만 in-place로 갱신
+async function refreshDetailPrice() {
+  if (!currentDetail || currentDetail.kind !== 'position' || !positionDetailData) return;
+  const fresh = await apiFetchSilent(`/api/journal/position/${currentDetail.id}`);
+  if (!fresh) return;
+
+  positionDetailData.currentPrice = fresh.currentPrice;
+  positionDetailData.holdingQty = fresh.holdingQty;
+  positionDetailData.usedAmount = fresh.usedAmount;
+  positionDetailData.soldAmount = fresh.soldAmount;
+  positionDetailData.pnl = fresh.pnl;
+  if (positionDetailData.state === '완료') return;
+
+  const qty = positionDetailData.holdingQty || 0;
+  const currentPrice = positionDetailData.currentPrice;
+  const sellAllNow = qty * (currentPrice || 0);
+  const currentPnl = (positionDetailData.soldAmount || 0) + sellAllNow - (positionDetailData.usedAmount || 0);
+
+  const priceEl = document.getElementById('detailCurrentPrice');
+  const sellAllEl = document.getElementById('detailSellAllNow');
+  const pnlEl = document.getElementById('detailCurrentPnl');
+  if (priceEl) priceEl.textContent = `현재가: ${currentPrice != null ? formatWon(currentPrice) : '-'}`;
+  if (sellAllEl) sellAllEl.textContent = `현재 보유주 전량 매도가: ${currentPrice != null ? formatWon(sellAllNow) : '-'}`;
+  if (pnlEl) pnlEl.textContent = `현재 손익: ${currentPnl >= 0 ? '+' : ''}${formatWon(currentPnl)}`;
+}
+
+async function refreshPrices() {
+  await refreshListPrices();
+  await refreshDetailPrice();
+}
+
 function renderRecordSection(kind, records) {
   const sorted = [...records].sort((a, b) => {
     const da = kind === 'buy' ? a.buyAt : a.sellAt;
@@ -464,7 +541,7 @@ function renderRecordSection(kind, records) {
   const itemsHtml = pageItems.map(item => {
     const dateVal = kind === 'buy' ? item.buyAt : item.sellAt;
     return `<div class="record-row" data-kind="${kind}" data-id="${item.id}">
-      <strong>${item.title}</strong> · ${formatWon(item.price)} · ${formatShares(item.quantity)} · 총 ${formatWon(item.price * item.quantity)} · ${formatDateTime(dateVal)}
+      ${formatWon(item.price)} · ${formatShares(item.quantity)} · 총 ${formatWon(item.price * item.quantity)} · ${formatDateTime(dateVal)}
     </div>`;
   }).join('');
 
@@ -524,6 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
   filterToDateEl.value = toDate;
 
   fetchList();
+
+  // 10초마다 현재가 관련 값(현재시세/평가금액/손익, 상세모달 현재가)만 배경 갱신
+  setInterval(refreshPrices, 10000);
 
   // ── 탭 ──
   document.getElementById('categoryTabs').addEventListener('click', e => {
@@ -646,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── 제목 수정 ──
   document.getElementById('detailTitleSaveBtn').addEventListener('click', async () => {
-    if (!currentDetail) return;
+    if (!currentDetail || currentDetail.kind !== 'position') return;
     const newTitle = document.getElementById('detailTitleInput').value.trim();
     if (!newTitle) { window.alert('제목을 입력해주세요.'); return; }
     const result = await apiFetch(`/api/journal/${currentDetail.kind}/${currentDetail.id}/title`, {
@@ -655,29 +735,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (result !== undefined) {
       if (currentDetail.kind === 'position' && positionDetailData) positionDetailData.title = newTitle;
-      fetchList();
-    }
-  });
-
-  // ── 공유 토글 ──
-  document.getElementById('toggleShareBtn').addEventListener('click', async () => {
-    if (!currentDetail) return;
-    const item = currentDetail.kind === 'position'
-      ? positionDetailData
-      : findListItem(currentDetail.kind, currentDetail.id);
-    if (!item) return;
-
-    if (!item.isShared) {
-      const ok = window.confirm('공유할까요?');
-      if (!ok) return;
-    }
-
-    const result = await apiFetch(`/api/journal/${currentDetail.kind}/${currentDetail.id}/share`, { method: 'PATCH' });
-    if (result !== undefined) {
-      if (currentDetail.kind === 'position' && positionDetailData) {
-        positionDetailData.isShared = !positionDetailData.isShared;
-        renderDetailModal();
-      }
       fetchList();
     }
   });
@@ -715,17 +772,16 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (!currentDetail || currentDetail.kind !== 'position') return;
     const data = new FormData(document.getElementById('addBuyForm'));
-    const title = String(data.get('addBuyTitle') || '').trim();
     const buyAt = String(data.get('addBuyAt') || '').trim();
     const quantity = Number(data.get('addBuyQuantity') || 0);
     const price = Number(data.get('addBuyPrice') || 0);
-    if (!title || !buyAt || !quantity || !price) {
-      window.alert('제목, 매수 일시, 매수 수량, 매수 당시 주가를 모두 입력해주세요.');
+    if (!buyAt || !quantity || !price) {
+      window.alert('매수 일시, 매수 수량, 매수 당시 주가를 모두 입력해주세요.');
       return;
     }
     const result = await apiFetch(`/api/journal/${currentDetail.id}/buy`, {
       method: 'POST',
-      body: JSON.stringify({ title, buyAt: new Date(buyAt).toISOString(), price, quantity }),
+      body: JSON.stringify({ buyAt: new Date(buyAt).toISOString(), price, quantity }),
     });
     if (result !== undefined) {
       positionDetailData = null;
@@ -750,17 +806,16 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     if (!currentDetail || currentDetail.kind !== 'position') return;
     const data = new FormData(document.getElementById('sellForm'));
-    const title = String(data.get('sellTitle') || '').trim();
     const sellAt = String(data.get('sellAt') || '').trim();
     const quantity = Number(data.get('sellQuantity') || 0);
     const price = Number(data.get('sellPrice') || 0);
-    if (!title || !sellAt || !quantity || !price) {
-      window.alert('제목, 매도 일시, 매도 수량, 매도 당시 주가를 모두 입력해주세요.');
+    if (!sellAt || !quantity || !price) {
+      window.alert('매도 일시, 매도 수량, 매도 당시 주가를 모두 입력해주세요.');
       return;
     }
     const result = await apiFetch(`/api/journal/${currentDetail.id}/sell`, {
       method: 'POST',
-      body: JSON.stringify({ title, sellAt: new Date(sellAt).toISOString(), price, quantity }),
+      body: JSON.stringify({ sellAt: new Date(sellAt).toISOString(), price, quantity }),
     });
     if (result !== undefined) {
       positionDetailData = null;

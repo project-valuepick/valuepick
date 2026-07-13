@@ -14,7 +14,7 @@
   <section class="page-head">
     <div>
       <h1>투자일지</h1>
-      <p>내 투자 기록을 저장하고, 원하면 커뮤니티에 공유할 수 있습니다.</p>
+      <p>내 투자 기록을 저장하세요.</p>
     </div>
     <button class="btn-primary" id="openJournalModal" type="button">종목 추가</button>
   </section>
@@ -22,11 +22,10 @@
   <section class="toolbar">
     <div class="tabs" id="categoryTabs">
       <button class="tab active" data-category="all" type="button">전체</button>
+      <button class="tab" data-category="hold" type="button">보유</button>
+      <button class="tab" data-category="deal" type="button">거래완료</button>
       <button class="tab" data-category="buy" type="button">매수</button>
       <button class="tab" data-category="sell" type="button">매도</button>
-      <button class="tab" data-category="hold" type="button">보유</button>
-      <button class="tab" data-category="deal" type="button">거래</button>
-      <button class="tab" data-category="shared" type="button">공유됨</button>
     </div>
     <div class="search-box">
       <input id="journalSearchInput" type="text" placeholder="종목명, 제목, 메모 검색" aria-label="투자일지 검색" />
@@ -43,7 +42,7 @@
       종료일
       <input type="date" id="filterToDate" />
     </label>
-    <p class="date-filter-hint">매수는 매수일, 매도는 매도일, 보유·거래는 최종 매도일 기준으로 필터링됩니다.</p>
+    <p class="date-filter-hint">매수는 매수일, 매도는 매도일, 보유·거래완료는 최종 매도일 기준으로 필터링됩니다.</p>
   </section>
 
   <div class="table-wrap">
@@ -118,18 +117,13 @@
     <div class="action-body">
       <div id="actionMeta" class="action-detail"></div>
       <div class="action-buttons">
-        <button class="btn-outline" id="toggleShareBtn" type="button">공유하기</button>
         <button class="btn-outline" id="openBuyFormBtn" type="button">매수</button>
-        <button class="btn-outline" id="openSellFormBtn" type="button">매도 등록</button>
+        <button class="btn-outline" id="openSellFormBtn" type="button">매도</button>
         <button class="btn-danger" id="deleteJournalBtn" type="button">삭제</button>
       </div>
       <form id="addBuyForm" class="sell-form hidden" novalidate>
         <h3>매수 등록</h3>
         <div class="form-grid">
-          <label>
-            제목
-            <input type="text" name="addBuyTitle" required />
-          </label>
           <label>
             매수 일시
             <input type="datetime-local" name="addBuyAt" required />
@@ -151,10 +145,6 @@
       <form id="sellForm" class="sell-form hidden" novalidate>
         <h3>매도 등록</h3>
         <div class="form-grid">
-          <label>
-            제목
-            <input type="text" name="sellTitle" required />
-          </label>
           <label>
             매도 일시
             <input type="datetime-local" name="sellAt" required />

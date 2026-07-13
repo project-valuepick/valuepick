@@ -105,7 +105,8 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     private String orderClause(String sort, String dir) {
         String col = toDbColumn(sort);
         if (col == null) return "";
-        return " ORDER BY " + col + " " + ("asc".equalsIgnoreCase(dir) ? "ASC" : "DESC");
+        // null은 정렬 방향과 무관하게 항상 마지막으로 (MySQL은 기본적으로 ASC에서 null을 맨 앞에 둠)
+        return " ORDER BY (" + col + " IS NULL) ASC, " + col + " " + ("asc".equalsIgnoreCase(dir) ? "ASC" : "DESC");
     }
 
     // ── 실시간 현재가/등락률 (API 실패 시 DB 값으로 폴백) ─────────────
@@ -239,17 +240,28 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
     @Override
     public MarketIndexDto getKOSPI() throws Exception {
         MarketIndex kospi = marketIndexRepository
-                .findTop1ByIdxNmOrderByBasDdDesc("KOSPI")
+                .findTop1ByIdxNmOrderByBasDdDesc("코스피")
                 .orElseThrow(() -> new Exception("KOSPI 데이터가 없습니다."));
         return MarketIndexDto.from(kospi);
     }
 
     @Override
-    public ExchangeDto getExchange() throws Exception {
+    public Map<String,Object> getExchange() throws Exception {
+        Map<String, Object> ex = new HashMap<>();
         Exchange exchange = exchangeRepository
                 .findById("USD")
                 .orElseThrow(() -> new Exception("환율 데이터가 없습니다."));
-        return ExchangeDto.from(exchange);
+        ex.put("USD",ExchangeDto.from(exchange));
+        exchange = exchangeRepository
+                .findById("JPY(100)")
+                .orElseThrow(() -> new Exception("환율 데이터가 없습니다."));
+        ex.put("JPY(100)",ExchangeDto.from(exchange));
+        exchange = exchangeRepository
+                .findById("CNH")
+                .orElseThrow(() -> new Exception("환율 데이터가 없습니다."));
+        ex.put("CNH",ExchangeDto.from(exchange));
+
+        return ex;
     }
 
     // ── 전체 목록 (EntityManager 직접 SQL — Pageable Sort 회피) ───
