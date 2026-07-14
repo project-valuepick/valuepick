@@ -56,7 +56,7 @@ function sortStocks(stocks, key, dir) {
 // API Layer
 // ──────────────────────────────────────────────
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "/bn";
 
 // 목록 전체 필드 정규화 (/info/list, /info/list/filter, /info/search)
 function normalizeStock(s) {

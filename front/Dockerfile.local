@@ -1,0 +1,9 @@
+# 로컬 개발용 - SSL/도메인 인증서 없이 HTTP(80)만 서빙
+FROM nginx:alpine
+
+COPY . /usr/share/nginx/html
+COPY nginx-local.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

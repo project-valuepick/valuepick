@@ -10,12 +10,14 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,14 +31,16 @@ public class JWTTokenProvider {
 
     private final UserRepository userRepository;
 
+    @Value("${jwt.secret}")
+    private String secretKey;
+
     private Key key;
 
-    // 앱 시작 시 한 번 실행 - 서명에 사용할 키 생성
+    // 앱 시작 시 한 번 실행 - properties 의 jwt.secret 으로 서명 키 생성 (재시작해도 동일 키 유지)
     @PostConstruct
     public void init() {
-        byte[] keyBytes = KeyGenerator.keyGen();
-        this.key = Keys.hmacShaKeyFor(keyBytes);
-        log.info("JWTTokenProvider init - key generated");
+        this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        log.info("JWTTokenProvider init - key loaded from properties");
     }
 
     // 로그인 성공 시 AccessToken + RefreshToken 생성
