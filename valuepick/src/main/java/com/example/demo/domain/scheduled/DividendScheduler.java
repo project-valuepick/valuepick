@@ -15,6 +15,7 @@ public class DividendScheduler {
 
     private final DividendCollector dividendCollector;
 
+    // 배당금 수집 매년 4월 1일 새벽 2시
     @Scheduled(cron = "0 0 2 1 4 *")
     public void collectDividend() {
         try {
