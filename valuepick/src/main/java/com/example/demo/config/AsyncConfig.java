@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 // AsyncConfigurer 구현 - @Async void 메서드의 미처리 예외를 커스텀 핸들러로 받도록 등록
 // (각 @Async("dartExecutor") 등 이름 지정 호출은 getAsyncExecutor()와 무관하게 그대로 동작함)
 @Configuration
-//@EnableAsync
+@EnableAsync
 public class AsyncConfig implements AsyncConfigurer {
 
     // 주가 수집용 스레드풀

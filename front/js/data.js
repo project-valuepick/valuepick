@@ -232,8 +232,23 @@ async function fetchStockNews(code, page = 0) {
   return res.json();
 }
 
+// /info/search는 종목코드가 아닌 회사명(corp_name LIKE)으로만 검색되므로 회사명을 받아 조회 후
+// 응답 중 stock_code가 일치하는 행만 골라 메인/랭킹 페이지와 동일한 실시간 시세(mkp/flt_rt)를 반환 (실패 시 null)
+async function fetchRealtimePrice(code, corpName) {
+  try {
+    const res = await fetch(`${API_BASE}/info/search?keyword=${encodeURIComponent(corpName)}&page=0&size=20`);
+    if (!res.ok) return null;
+    const body = await res.json();
+    const row = (body.result || []).find((r) => r.stock_code === code);
+    if (!row) return null;
+    return normalizeStock(row);
+  } catch (e) {
+    return null;
+  }
+}
+
 async function fetchStockFull(code) {
-   const [stockRes, fsRes, newsPage] = await Promise.all([
+  const [stockRes, fsRes, newsPage] = await Promise.all([
     fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}`),
     fetch(`${API_BASE}/api/stocks/${encodeURIComponent(code)}/financial-statements`),
     fetchStockNews(code, 0),
@@ -244,11 +259,19 @@ async function fetchStockFull(code) {
   const statements = fsRes.ok ? await fsRes.json() : [];
   const news = newsPage.content;
   const newsTotalPages = newsPage.totalPages;
+  const realtime = await fetchRealtimePrice(code, company.corpName);
 
-  // 등락액: 최근 2개 종가 차이
-  const changeAmount = priceHistory.length >= 2
-    ? priceHistory[priceHistory.length - 1].clpr - priceHistory[priceHistory.length - 2].clpr
-    : 0;
+  // 현재가: 메인 페이지와 동일하게 실시간 시세 우선 사용, 실패 시 DB 종가로 폴백
+  const price = realtime?.price || Number(latestPrice?.clpr) || 0;
+  const changeRate = realtime ? realtime.changeRate : Number(latestPrice?.fltRt) || 0;
+
+  // 등락액: 실시간가 - 전일 종가 (실시간 조회 실패 시 최근 2개 종가 차이로 폴백)
+  const prevClose = priceHistory.length >= 2 ? priceHistory[priceHistory.length - 2].clpr : null;
+  const changeAmount = realtime && prevClose != null
+    ? price - prevClose
+    : priceHistory.length >= 2
+      ? priceHistory[priceHistory.length - 1].clpr - priceHistory[priceHistory.length - 2].clpr
+      : 0;
 
   // 연도별 재무제표 — 연도당 1건만 사용 (가장 먼저 나오는 보고서)
   const byYear = new Map();
@@ -264,8 +287,8 @@ async function fetchStockFull(code) {
     news,
     newsTotalPages,
     name:            company.corpName,
-    price:           Number(latestPrice?.clpr) || 0,
-    changeRate:      Number(latestPrice?.fltRt) || 0,
+    price,
+    changeRate,
     changeAmount,
     marketCap:       Number(latestPrice?.mrktTotAmt) || 0,
     per:             indicator?.per ?? null,

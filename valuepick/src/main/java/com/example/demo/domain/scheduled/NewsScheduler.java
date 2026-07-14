@@ -1,4 +1,4 @@
-package com.example.demo.domain.scheduler;
+package com.example.demo.domain.scheduled;
 
 import com.example.demo.domain.service.NewsCrawlService;
 import lombok.RequiredArgsConstructor;
