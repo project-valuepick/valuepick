@@ -13,10 +13,13 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 # 필요 lib 설치
 # RUN apt-get update && apt-get install -y curl
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl tzdata
+
+# 타임존 KST 고정
+ENV TZ=Asia/Seoul
 
 # 외부 접근을 위한 포트 설정
 EXPOSE 8080
 
 # JAR 실행
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Duser.timezone=Asia/Seoul", "-jar", "app.jar"]

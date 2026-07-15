@@ -17,7 +17,7 @@ public class CompanyScheduler {
     private final DartCompanyCollector dartCompanyCollector;
 
     // 매년 1월 1일 새벽 1시
-    @Scheduled(cron = "0 0 1 1 1 *")
+    @Scheduled(cron = "0 0 1 1 1 *", zone = "Asia/Seoul")
     public void collectCompany() {
         try {
             String basDt = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));

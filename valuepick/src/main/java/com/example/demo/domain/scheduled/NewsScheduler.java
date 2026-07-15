@@ -14,7 +14,7 @@ public class NewsScheduler {
     private final NewsCrawlService newsCrawlService;
 
     // 매시 정각에 전체 종목 뉴스를 수집합니다.
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
     public void crawlNews() {
         try {
             newsCrawlService.crawlAndSaveAll();

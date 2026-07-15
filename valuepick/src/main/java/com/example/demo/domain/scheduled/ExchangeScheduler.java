@@ -23,7 +23,7 @@ public class ExchangeScheduler {
 
     // 월-금 새벽 1시 수집 - 환율은 당일 오전 11시경 고시되므로 전 영업일자 조회
     // (월요일은 직전 영업일인 금요일자를 조회)
-    @Scheduled(cron = "0 0 1 * * MON-FRI")
+    @Scheduled(cron = "0 0 1 * * MON-FRI", zone = "Asia/Seoul")
     public void collectExchangeRate() {
         try {
             LocalDate targetDate = LocalDate.now().minusDays(
@@ -37,7 +37,7 @@ public class ExchangeScheduler {
     }
 
     // 7일 이전 환율 데이터 새벽 2시 30분에 삭제
-    @Scheduled(cron = "0 30 2 * * *")
+    @Scheduled(cron = "0 30 2 * * *", zone = "Asia/Seoul")
     public void deleteOldExchangeRate() {
         try {
             LocalDate cutoff = LocalDate.now().minusDays(7);

@@ -17,7 +17,7 @@ public class UserCleanupScheduler {
     private final UserRepository userRepository;
 
     // 매일 자정 — 탈퇴 후 30일 지난 유저 완전 삭제
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void deleteExpiredUsers() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
