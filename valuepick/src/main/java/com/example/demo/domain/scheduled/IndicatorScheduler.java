@@ -17,7 +17,7 @@ public class IndicatorScheduler {
 
     // StockPriceScheduler(새벽 1시 20분) 수집 완료 후, Top100Scheduler(새벽 2시) 이전 - 평일 새벽 1시 50분
     // 재무제표(FinancialStatement)는 연 1회(4월 1일)만 갱신되지만, PER/PBR/모멘텀 등은 종가에 연동되므로 매일 재계산 필요
-    @Scheduled(cron = "0 50 1 * * MON-FRI")
+    @Scheduled(cron = "0 40 12 * * MON-FRI")
     public void calculateDaily() {
         try {
             String year = String.valueOf(activeYear());
