@@ -20,6 +20,12 @@ COPY . /usr/share/nginx/html
 # (선택) 커스텀 Nginx 설정 파일이 있을 경우 복사
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# 웹 루트로 함께 복사된 nginx 설정/Dockerfile은 정적 파일로 노출되지 않도록 제거
+RUN rm -f /usr/share/nginx/html/nginx.conf \
+          /usr/share/nginx/html/nginx-local.conf \
+          /usr/share/nginx/html/Dockerfile \
+          /usr/share/nginx/html/Dockerfile.local
+
 # 포트 노출
 EXPOSE 80 443
 
