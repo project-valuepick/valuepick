@@ -16,7 +16,7 @@ public class FinancialScheduler {
     private final DartFinancialCollector dartFinancialCollector;
 
     // 사업보고서 (11011) - 4월 1일 새벽 1시 수집. 지표계산은 IndicatorScheduler가 평일 매일 담당
-    @Scheduled(cron = "0 0 1 1 4 *")
+    @Scheduled(cron = "0 0 1 1 4 *", zone = "Asia/Seoul")
     public void collectAnnual() {
         try {
             String year = String.valueOf(LocalDate.now().getYear() - 1);
