@@ -15,6 +15,7 @@ services:
       context: ./DB
       dockerfile: Dockerfile
     container_name: db-container
+    restart: unless-stopped
     networks:
       custom-network:
         ipv4_address: 172.30.0.10
@@ -46,6 +47,7 @@ services:
     build:
       context: ./front
     container_name: fn-container
+    restart: unless-stopped
     ports:
       - "80:80"          # HTTP → HTTPS 리다이렉트용
       - "443:443"        # HTTPS 메인
@@ -64,6 +66,7 @@ services:
     build:
       context: ./valuepick
     container_name: bn-container
+    restart: unless-stopped
     # ports:
     #   - "8080:8080"
     env_file:

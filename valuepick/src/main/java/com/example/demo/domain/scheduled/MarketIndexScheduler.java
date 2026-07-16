@@ -23,7 +23,7 @@ public class MarketIndexScheduler {
 
     // 월-금 새벽 1시 10분 수집 - 지수는 당일 장마감(15:30) 이후 확정되므로 전 영업일자 조회
     // (월요일은 직전 영업일인 금요일자를 조회)
-    @Scheduled(cron = "0 10 11 * * MON-FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 10 1 * * MON-FRI", zone = "Asia/Seoul")
     public void collectMarketIndex() {
         try {
             LocalDate targetDate = LocalDate.now().minusDays(
