@@ -33,11 +33,11 @@ public class Top100Scheduler {
     @Scheduled(cron = "0 35 2 * * *", zone = "Asia/Seoul")
     public void deleteOldTop100() {
         try {
-            LocalDate cutoff = LocalDate.now().minusDays(1);
-            log.info("[Top100Scheduler] 1일 이전 TOP100 삭제 - cutoff={}", cutoff);
+            LocalDate cutoff = LocalDate.now().minusDays(7);
+            log.info("[Top100Scheduler] 7일 이전 TOP100 삭제 - cutoff={}", cutoff);
             top100Repository.deleteByBaseDtBefore(cutoff);
         } catch (Exception e) {
-            log.error("[Top100Scheduler] 1일 이전 TOP100 삭제 실패", e);
+            log.error("[Top100Scheduler] 7일 이전 TOP100 삭제 실패", e);
         }
     }
 }

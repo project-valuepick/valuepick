@@ -30,7 +30,8 @@ public interface Top100Repository extends JpaRepository<Top100, Top100Id> {
                     FROM STOCK_PRICE sp2
                     WHERE sp2.srtn_cd = t.stock_code
                 )
-            ORDER BY t.score DESC
+            WHERE t.base_dt >= (select MAX(base_dt) from TOP100)
+            ORDER BY t.base_dt DESC, t.score DESC
             LIMIT 10
             """,
             nativeQuery = true)
@@ -50,7 +51,8 @@ public interface Top100Repository extends JpaRepository<Top100, Top100Id> {
                     FROM STOCK_PRICE sp2
                     WHERE sp2.srtn_cd = t.stock_code
                 )
-            ORDER BY t.score DESC
+            WHERE t.base_dt >= (select MAX(base_dt) from TOP100)
+            ORDER BY t.base_dt DESC, t.score DESC
             """,
             nativeQuery = true)
     Slice<Object> findTop100BySlice(Pageable pageable);
