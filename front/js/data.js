@@ -301,7 +301,7 @@ async function fetchStockFull(code) {
     shares:          latestPrice?.lstgStCnt != null ? Number(latestPrice.lstgStCnt).toLocaleString('ko-KR') + '주' : '-',
     ceoNm:           company.ceoNm || '-',
     indutyNm:        company.indutyNm || '-',
-    market:          company.corpCls === 'Y' ? '유가증권' : company.corpCls === 'K' ? '코스닥' : '-',
+    market:          company.corpCls === 'Y' ? '코스피' : company.corpCls === 'K' ? '코스닥' : '-',
     operatingProfit: hasFinancials ? toEok(byYear.get(years[years.length - 1]).operatingIncome) : 0,
     years,
     revenueHistory:     years.map((y) => toEok(byYear.get(y)?.revenue)),
