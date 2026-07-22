@@ -590,6 +590,7 @@ async function renderStockSearchList() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('journal');
+  initFooter();
 
   const defaultRange = getDefaultDateRange();
   fromDate = defaultRange.from;

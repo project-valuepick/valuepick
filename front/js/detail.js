@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('');
+  initFooter();
 
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');

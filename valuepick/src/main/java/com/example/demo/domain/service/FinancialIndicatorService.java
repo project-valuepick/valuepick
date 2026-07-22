@@ -308,6 +308,10 @@ public class FinancialIndicatorService {
         return round((eps - prevEps) / prevEps * 100);
     }
 
+    // DART 공시 오류로 "주당 현금배당금(원)"에 총액이 잘못 기재되는 경우가 있어(예: 와이엔텍),
+    // 계산된 배당수익률이 비정상적으로 크면(100% 초과) 오류로 간주하고 null 처리
+    private static final double MAX_VALID_DIVIDEND_YIELD = 100.0;
+
     private Double resolveDividendYield(String corpCode, long closePrice) {
         if (closePrice == 0) return null;
 
@@ -317,6 +321,7 @@ public class FinancialIndicatorService {
         return dividendOpt
                 .filter(d -> d.getDividendAmount() != null)
                 .map(d -> round((double) d.getDividendAmount() / closePrice * 100))
+                .filter(yield -> yield <= MAX_VALID_DIVIDEND_YIELD)
                 .orElse(null);
     }
 
