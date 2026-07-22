@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initHeader('');
+  initFooter();
   initMenu();
   loadProfile();
   loadWatchlist();

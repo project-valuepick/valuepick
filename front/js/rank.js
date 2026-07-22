@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('ranking');
+  initFooter();
   await loadFavoriteState();
 
   const tableBody       = document.getElementById('tableBody');
