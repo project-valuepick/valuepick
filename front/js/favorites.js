@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('watchlist');
+  initFooter();
 
   if (!localStorage.getItem('accessToken')) {
     window.location.href = 'login.html';

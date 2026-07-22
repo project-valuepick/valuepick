@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('list');
+  initFooter();
   await loadFavoriteState();
 
   let stocks = [];

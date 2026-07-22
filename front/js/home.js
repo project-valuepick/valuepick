@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   initHeader('home');
+  initFooter();
   await loadFavoriteState();
 
   // 시장 지표

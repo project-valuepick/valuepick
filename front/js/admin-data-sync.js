@@ -40,6 +40,7 @@ function refreshHoldingJournals() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('admin');
+  initFooter();
 
   const logEl = document.getElementById('syncLog');
 

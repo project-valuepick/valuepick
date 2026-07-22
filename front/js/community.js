@@ -148,6 +148,7 @@ function formatDateShort(value) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('community');
+  initFooter();
 
   let posts = loadCommunityPosts();
   let tab = 'free';

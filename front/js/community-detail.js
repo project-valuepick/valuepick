@@ -79,6 +79,7 @@ function generateSeedStream(stockName) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('community');
+  initFooter();
 
   const postDetailEl = document.getElementById('postDetail');
   const discussionPanelEl = document.getElementById('discussionPanel');

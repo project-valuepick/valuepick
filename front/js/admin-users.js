@@ -51,6 +51,7 @@ function saveUsers(items) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('admin');
+  initFooter();
 
   const bodyEl = document.getElementById('userTableBody');
   let users = loadUsers();

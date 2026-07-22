@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initHeader('');
+  initFooter();
   const page = document.body.dataset.page;
 
   if (page === 'login') initLogin();
