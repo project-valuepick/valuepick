@@ -19,7 +19,7 @@ public class StockPriceScheduler {
     private final StockPriceRepository stockPriceRepository;
 
     // 월-금 새벽 1시 20분 수집 - 전 영업일자 기준 (월요일은 직전 영업일인 금요일자를 조회)
-    @Scheduled(cron = "0 20 1 * * MON-FRI")
+    @Scheduled(cron = "0 20 1 * * MON-FRI", zone = "Asia/Seoul")
     public void collectStockPrice() {
         try {
             LocalDate baseDate = LocalDate.now().minusDays(
@@ -44,7 +44,7 @@ public class StockPriceScheduler {
     }
 
     // 7일 이전 주가 데이터 새벽 2시 30분에 삭제
-    @Scheduled(cron = "0 30 2 * * *")
+    @Scheduled(cron = "0 30 2 * * *", zone = "Asia/Seoul")
     public void deleteOldStockPrice() {
         try {
             LocalDate cutoff = LocalDate.now().minusDays(7);

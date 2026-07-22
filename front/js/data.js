@@ -56,7 +56,7 @@ function sortStocks(stocks, key, dir) {
 // API Layer
 // ──────────────────────────────────────────────
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "/bn";
 
 // 목록 전체 필드 정규화 (/info/list, /info/list/filter, /info/search)
 function normalizeStock(s) {
@@ -301,7 +301,7 @@ async function fetchStockFull(code) {
     shares:          latestPrice?.lstgStCnt != null ? Number(latestPrice.lstgStCnt).toLocaleString('ko-KR') + '주' : '-',
     ceoNm:           company.ceoNm || '-',
     indutyNm:        company.indutyNm || '-',
-    market:          company.corpCls === 'Y' ? '유가증권' : company.corpCls === 'K' ? '코스닥' : '-',
+    market:          company.corpCls === 'Y' ? '코스피' : company.corpCls === 'K' ? '코스닥' : '-',
     operatingProfit: hasFinancials ? toEok(byYear.get(years[years.length - 1]).operatingIncome) : 0,
     years,
     revenueHistory:     years.map((y) => toEok(byYear.get(y)?.revenue)),

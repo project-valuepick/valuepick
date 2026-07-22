@@ -1,7 +1,6 @@
 package com.example.demo.domain.scheduled;
 
 import com.example.demo.domain.service.DartFinancialCollector;
-import com.example.demo.domain.service.FinancialIndicatorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,10 +14,9 @@ import java.time.LocalDate;
 public class FinancialScheduler {
 
     private final DartFinancialCollector dartFinancialCollector;
-    private final FinancialIndicatorService financialIndicatorService;
 
-    // 사업보고서 (11011) - 4월 1일 새벽 1시 수집, 3시 지표계산
-    @Scheduled(cron = "0 0 1 1 4 *")
+    // 사업보고서 (11011) - 4월 1일 새벽 1시 수집. 지표계산은 IndicatorScheduler가 평일 매일 담당
+    @Scheduled(cron = "0 0 1 1 4 *", zone = "Asia/Seoul")
     public void collectAnnual() {
         try {
             String year = String.valueOf(LocalDate.now().getYear() - 1);
@@ -26,18 +24,6 @@ public class FinancialScheduler {
             dartFinancialCollector.collect(year, "11011");
         } catch (Exception e) {
             log.error("[FinancialScheduler] 사업보고서 수집 실패", e);
-        }
-    }
-
-    // 사업보고서 (11011) - 4월 1일 새벽 3시 지표계산 시작
-    @Scheduled(cron = "0 0 3 1 4 *")
-    public void calculateAnnual() {
-        try {
-            String year = String.valueOf(LocalDate.now().getYear() - 1);
-            log.info("[FinancialScheduler] 사업보고서 지표계산 시작 - year={}", year);
-            financialIndicatorService.calculateAll(year, "11011");
-        } catch (Exception e) {
-            log.error("[FinancialScheduler] 사업보고서 지표계산 실패", e);
         }
     }
 

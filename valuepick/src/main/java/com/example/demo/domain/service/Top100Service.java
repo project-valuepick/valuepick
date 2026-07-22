@@ -55,7 +55,9 @@ public class Top100Service {
         // 업종 미분류(induty_code 미수집) 종목은 금융업 여부를 판단할 수 없어 F-Score 필터를 공정하게 적용 못 함 → 후보에서 제외
         // (진짜 금융업인데 induty_code가 아직 없으면 예외 통과를 못 받고 구조적으로 부당하게 탈락하는 걸 방지)
         // F-Score 필터: 6점 이상만 통과. 단, 금융업은 F-Score 자체를 계산 안 해서 null이라 필터 예외로 통과시킴
+        // corp_cls "Y" = 코스피(유가증권시장)만 대상. 코스닥("K") 등은 제외
         List<StockIndicator> candidates = indicators.stream()
+                .filter(i -> "Y".equals(i.getCompany().getCorpCls()))
                 .filter(i -> i.getCompany().getIndutyCode() != null)
                 .filter(i -> i.getCompany().isFinancialIndustry()
                         || (i.getFScore() != null && i.getFScore() >= F_SCORE_PASS_THRESHOLD))

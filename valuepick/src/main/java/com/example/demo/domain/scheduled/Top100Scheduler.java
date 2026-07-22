@@ -18,7 +18,7 @@ public class Top100Scheduler {
     private final Top100Repository top100Repository;
 
     // StockPriceScheduler(새벽 1시 20분) 수집 완료 후 새벽 2시에 스코어 재계산
-    @Scheduled(cron = "0 0 2 * * MON-FRI")
+    @Scheduled(cron = "0 0 2 * * MON-FRI", zone = "Asia/Seoul")
     public void calculateTop100() {
         try {
             log.info("[Top100Scheduler] TOP100 스코어 계산 시작");
@@ -30,7 +30,7 @@ public class Top100Scheduler {
     }
 
     // 다른 삭제 작업(새벽 2시 30분)들 이후 새벽 2시 35분에 삭제
-    @Scheduled(cron = "0 35 2 * * *")
+    @Scheduled(cron = "0 35 2 * * *", zone = "Asia/Seoul")
     public void deleteOldTop100() {
         try {
             LocalDate cutoff = LocalDate.now().minusDays(7);

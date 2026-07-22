@@ -27,3 +27,7 @@ valuepick/.idea/misc.xml
 valuepick/.idea/vcs.xml
 valuepick/gradle/wrapper/gradle-wrapper.jar
 valuepick/gradle/wrapper/gradle-wrapper.properties
+
+# 서비스별 실제 환경변수 파일 — 비밀번호 등 민감정보 포함, git/CI-CD 체크아웃에도 지워지지 않도록 항상 로컬에만 존재
+**/.env
+!**/.env.example

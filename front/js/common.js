@@ -22,8 +22,9 @@ function renderHeader(activePage) {
     { href: 'list.html', label: '종목리스트', key: 'list' },
     { href: 'rank.html', label: '랭킹', key: 'ranking' },
     { href: 'investment-journal.html', label: '투자일지', key: 'journal' },
-    { href: 'community.html', label: '커뮤니티', key: 'community' },
-    { href: 'admin.html', label: '관리자', key: 'admin' },
+    // 1차 배포에서는 미노출 - 추후 활성화 예정
+    // { href: 'community.html', label: '커뮤니티', key: 'community' },
+    // { href: 'admin.html', label: '관리자', key: 'admin' },
     { href: 'favorites.html', label: '관심종목', key: 'watchlist' },
   ];
 

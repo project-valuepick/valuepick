@@ -114,7 +114,7 @@ public class SimpleInfoServiceImpl implements SimpleInfoService {
         try {
             Data data = naver_api_get(stockCode);
             m.put("mkp",    data.getNv());
-            m.put("flt_rt", (data.getRf().equals("2") ? data.getCr() * -1 : data.getRf().equals("5") ? data.getCr() : 0));
+            m.put("flt_rt", (data.getRf().equals("4") || data.getRf().equals("5") ? (data.getCr()*-1) : data.getRf().equals("2")|| data.getRf().equals("1") ? data.getCr() : 0));
         } catch (Exception e) {
             log.warn("네이버 실시간 시세 조회 실패 - stock_code={}, DB 값으로 대체: {}", stockCode, e.toString());
             m.put("mkp",    dbMkp);
