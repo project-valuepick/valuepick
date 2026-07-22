@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class InvestmentJournalDto {
 
     private Long id;
-    private String userId;
+    private Long userId;
 
     @NotBlank(message = "제목은 필수 항목입니다.")
     private String title;
@@ -28,9 +28,7 @@ public class InvestmentJournalDto {
         return InvestmentJournal.builder()
                 .user(user)
                 .title(this.title)
-                .content(this.content)
                 .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
                 .build();
     }
 
@@ -39,9 +37,7 @@ public class InvestmentJournalDto {
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
                 .title(entity.getTitle())
-                .content(entity.getContent())
                 .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

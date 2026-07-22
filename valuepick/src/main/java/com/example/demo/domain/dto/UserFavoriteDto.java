@@ -11,8 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class UserFavoriteDto {
 
-    @NotBlank(message = "사용자 ID는 필수 항목입니다.")
-    private String userId;
+    private Long userId;
 
     @NotBlank(message = "종목 코드는 필수 항목입니다.")
     private String stockCode;

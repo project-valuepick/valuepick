@@ -10,15 +10,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(
-                        "http://localhost:5500",
-                        "http://localhost:5501",
-                        "http://127.0.0.1:5500",
-                        "http://127.0.0.1:5501",
-                        "http://192.168.5.15:5500",
-                        "http://192.168.5.15:5501"
+                .allowedOriginPatterns(
+                        "https://www.valuepick.cloud",
+                        "http://localhost:*"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

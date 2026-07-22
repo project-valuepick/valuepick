@@ -8,6 +8,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class UserFavoriteId implements Serializable {
-    private String userId;
+    private Long userId;
     private String stockCode;
 }

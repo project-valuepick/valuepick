@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "DIVIDEND_INFO")
+@IdClass(DividendInfoId.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -16,10 +17,11 @@ public class DividendInfo {
     @Column(name = "corp_code")
     private String corpCode;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "corp_code", referencedColumnName = "corp_code", insertable = false, updatable = false)
     private Company company;
 
+    @Id
     @Column(name = "dividend_kind")
     private String dividendKind;
 
