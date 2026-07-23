@@ -1,10 +1,12 @@
 
-   
-   
-   <img width="1920" height="1080" alt="mainpage-1" src="https://github.com/user-attachments/assets/694a7d71-7aed-4bf5-a507-f3d8357df8ad" />
-
-
-
+<img width="1920" height="1080" alt="mainpage-1" src="DOC/GIF/mainpage-1.gif" />
+<img width="1920" height="1080" alt="login-1" src="DOC/GIF/login-1.gif" />
+<img width="1920" height="1080" alt="listpage-1" src="DOC/GIF/listpage-1.gif" />
+<img width="1920" height="1080" alt="detailpage-1" src="DOC/GIF/detailpage-1.gif" />
+<img width="1920" height="1080" alt="favorite-1" src="DOC/GIF/favorite-1.gif" />
+<img width="1920" height="1080" alt="top100-1" src="DOC/GIF/top100-1.gif" />
+<img width="1920" height="1080" alt="invest-1" src="DOC/GIF/invest-1.gif" />
+<img width="1920" height="1080" alt="mypage-1" src="DOC/GIF/mypage-1.gif" />
 
 
 # ValuePick!!!!
