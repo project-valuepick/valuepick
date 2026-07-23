@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers(HttpMethod.GET, "/info/**", "/api/stocks/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/admin/**", "/company/**", "/api/admin/**", "/api/top100/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
