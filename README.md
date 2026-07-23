@@ -1,6 +1,8 @@
 
+   
+   
+   <img width="1920" height="1080" alt="mainpage-1" src="https://github.com/user-attachments/assets/694a7d71-7aed-4bf5-a507-f3d8357df8ad" />
 
-![Uploading mainpage-1.gif…]()
 
 
 
