@@ -35,7 +35,7 @@ public class DartFinancialCollector {
     private String apiKey;
 
     private static final int SLEEP_MS = 100; // DART API 호출 간격 (차단 방지)
-    private static final int RETRY_COUNT = 1; // 실패 시 재시도 횟수
+    private static final int RETRY_COUNT = 3; // 실패 시 재시도 횟수
 
     private static final String FS_DIV_CFS = "CFS"; // 연결재무제표
     private static final String FS_DIV_OFS = "OFS"; // 별도재무제표
