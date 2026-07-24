@@ -76,8 +76,9 @@ function renderFooter() {
             <div class="footer-heading">서비스</div>
             <ul class="footer-list">
               <li><a href="list.html">종목 리스트</a></li>
+              <li><a href="rank.html">랭킹</a></li>
               <li><a href="investment-journal.html">투자일지</a></li>
-              <li><a href="mypage.html">마이페이지</a></li>
+              <li><a href="favorites.html">관심종목</a></li>
             </ul>
           </div>
 
@@ -97,7 +98,7 @@ function renderFooter() {
             ⚠ 본 서비스는 투자 참고용 정보만을 제공하며, 제공된 정보는 투자 권유가 아닙니다.
             투자 판단 및 결과에 대한 책임은 전적으로 투자자 본인에게 있습니다.
           </p>
-          <p class="footer-copyright">© 2025 ValuePick. All rights reserved.</p>
+          <p class="footer-copyright">© 2026 ValuePick. All rights reserved.</p>
         </div>
       </div>
     </footer>
