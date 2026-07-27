@@ -44,6 +44,40 @@
 
 상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/배포%20파이프라인.html)
 
+#### JENKINS 실행결과
+
+- Build Steps(Execute shell)
+
+```
+#!/bin/bash
+set -e
+
+echo "=== 1. 프로젝트 디렉터리로 이동 ==="
+cd /home/ec2-user/valuepick
+
+echo "=== 2. 최신 코드 pull ==="
+git fetch origin
+git checkout main
+git pull origin main
+
+echo "=== 3. Docker 이미지 재빌드 ==="
+docker-compose build
+
+echo "=== 4. 컨테이너 재기동 ==="
+docker-compose up -d
+
+echo "=== 5. 사용하지 않는 이미지 정리 ==="
+docker image prune -f
+
+echo "=== 배포 완료 ==="
+
+```
+
+<img src="docs/img/jenkins-1.PNG" width="800" alt="Jenkins 실행결과 1" />
+
+<img src="docs/img/jenkins-2.PNG" width="800" alt="Jenkins 실행결과 2" />
+
+
 
 ## ERD
 
