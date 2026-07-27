@@ -26,28 +26,30 @@
 
 ### 시스템 아키텍처
 
-<img src="DOC/img/시스템%20아키텍쳐.png" width="800" alt="시스템 아키텍처" />
+<img src="docs/img/시스템%20아키텍쳐.png" width="800" alt="시스템 아키텍처" />
 
-상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/DOC/docs/시스템%20아키텍쳐.html)
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/시스템%20아키텍쳐.html)
 
 
 
 ### 기술 아키텍처
 
-<img src="DOC/img/기술%20아키텍처%20.png" width="800" alt="기술 아키텍처" />
+<img src="docs/img/기술%20아키텍처%20.png" width="800" alt="기술 아키텍처" />
 
-상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/DOC/docs/기술%20아키텍쳐.html)
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/기술%20아키텍쳐.html)
 
 ### CI/CD 파이프 라인
 
-<img src="DOC/img/cicd-pipeline.png" width="800" alt="CI/CD 파이프라인" />
+<img src="docs/img/cicd-pipeline.png" width="800" alt="CI/CD 파이프라인" />
+
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/배포%20파이프라인.html)
 
 
 ## ERD
 
 핵심 엔티티 관계입니다. `MARKET_INDEX`, `EXCHANGE`, `NEWS`는 다른 엔티티와 JPA 연관관계로 매핑돼 있지 않은 독립 테이블이라 다이어그램에서는 제외했습니다(`NEWS.stock_code`는 FK가 아닌 단순 컬럼). `RefreshToken`도 `email` 문자열로만 연결되고 `User`와 FK 매핑은 없습니다.
 
-> 상세 문서: [`ERD.md`](DOC/docs/ERD.md) · 시각화: [바로 보기](https://project-valuepick.github.io/valuepick/DOC/docs/erd.html) 
+> 상세 문서: [`ERD.md`](docs/ERD.md) · 시각화: [바로 보기](https://project-valuepick.github.io/valuepick/erd.html) 
 
 ```mermaid
 erDiagram
@@ -183,19 +185,19 @@ erDiagram
 ### 종목 스크리닝
 - 전체 종목 목록 조회 · PER/PBR/ROE/배당수익률 범위 필터 · 정렬 · 페이징 · 종목명 검색
 
-  <img src="DOC/GIF/listpage-1.gif" width="800" alt="listpage-1" />
+  <img src="docs/GIF/listpage-1.gif" width="800" alt="listpage-1" />
 
 - 종목 상세: 재무제표(손익계산서·재무상태표) 연도별 추이, 투자지표, 관련 뉴스, Canvas 차트
 
-  <img src="DOC/GIF/detailpage-1.gif" width="800" alt="detailpage-1" />
+  <img src="docs/GIF/detailpage-1.gif" width="800" alt="detailpage-1" />
 
 - 홈 화면: 코스피 지수·환율 위젯, TOP10 추천 종목, 4대 랭킹(저PER/저PBR/고ROE/고배당) — 10초 주기 실시간 시세 갱신
 
-  <img src="DOC/GIF/mainpage-1.gif" width="800" alt="mainpage-1" />
+  <img src="docs/GIF/mainpage-1.gif" width="800" alt="mainpage-1" />
 
 - TOP100 랭킹: Piotroski F-Score + 7개 팩터 가중 스코어링 결과 페이지
 
-  <img src="DOC/GIF/top100-1.gif" width="800" alt="top100-1" />
+  <img src="docs/GIF/top100-1.gif" width="800" alt="top100-1" />
 
 ### 투자지표 스코어링 엔진
 - **투자지표 계산**: EPS·BPS·PER·PBR·ROE·ROA·부채비율·배당수익률·모멘텀(12-1)·EPS성장률, 외화 재무제표는 환율 환산 후 계산
@@ -205,21 +207,31 @@ erDiagram
 ### 회원/인증
 - JWT(Access/Refresh) 기반 회원가입·로그인·토큰 재발급
 
-  <img src="DOC/GIF/login-1.gif" width="800" alt="login-1" />
+  <img src="docs/GIF/login-1.gif" width="800" alt="login-1" />
 
 - 마이페이지: 닉네임/비밀번호 변경, 관심종목 관리, 회원탈퇴(soft delete, 30일 유예 후 스케줄러가 완전 삭제)
 
-  <img src="DOC/GIF/mypage-1.gif" width="800" alt="mypage-1" />
+  <img src="docs/GIF/mypage-1.gif" width="800" alt="mypage-1" />
 
 - 관심종목 등록/해제
 
-  <img src="DOC/GIF/favorite-1.gif" width="800" alt="favorite-1" />
+  <img src="docs/GIF/favorite-1.gif" width="800" alt="favorite-1" />
 
 ### 투자일지
 - 종목별 매수/매도 기록, 보유/완료 상태 관리, 메모, 제목 수정, 공유 여부 토글
 - 카테고리·기간·검색 조건 페이징 조회
 
-  <img src="DOC/GIF/invest-1.gif" width="800" alt="invest-1" />
+  <img src="docs/GIF/invest-1.gif" width="800" alt="invest-1" />
+
+### 반응형
+
+| 홈 화면 | 종목 목록 | TOP100 랭킹 |
+|---|---|---|
+| <img src="docs/img/resposive-main.PNG" width="200" height="340" alt="responsive-main" /> | <img src="docs/img/resposive-list.PNG" width="200" height="340" alt="responsive-list" /> | <img src="docs/img/resposive-rank.PNG" width="200" height="340" alt="responsive-rank" /> |
+
+| 투자일지 | 관심종목 | 마이페이지 |
+|---|---|---|
+| <img src="docs/img/resposive-journal.PNG" width="200" height="340" alt="responsive-journal" /> | <img src="docs/img/resposive-favaorit.PNG" width="200" height="340" alt="responsive-favorite" /> | <img src="docs/img/resposive-mypage.PNG" width="200" height="340" alt="responsive-mypage" /> |
 
 ## 폴더 구조
 
@@ -265,15 +277,9 @@ invest-project/
 
 ## API 개요
 
-| 경로 | 설명 | 로그인 필요 여부 |
-|---|---|---|
-| `POST /api/auth/register`, `/login`, `/refresh` | 회원가입 · 로그인 · 토큰 재발급 | 불필요 (로그인 이전 단계이므로) |
-| `GET /info/**` | 종목 목록/필터/검색/랭킹/TOP10·100/지수/환율 조회 | 불필요 |
-| `GET /api/stocks/**` | 종목 상세/뉴스/검색/재무제표 조회 | 불필요 |
-| `/api/favorites/**` | 관심종목 등록/조회/해제 | **필요** |
-| `/api/journal/**` | 투자일지 CRUD | **필요** |
-| `/api/users/me/**` | 마이페이지 (내 정보, 닉네임/비밀번호 변경, 탈퇴) | **필요** |
-| `/admin/**`, `/company/**`, `/api/admin/**`, `/api/top100/admin/**` | 데이터 수집 트리거, TOP100 수동 재계산 등 관리자 작업 | **필요 (ADMIN 권한)** |
+<img src="docs/img/swagger.PNG" width="800" alt="swagger" />
+
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/swagger-ui-static.html)
 
 ## 트러블슈팅 / 기술적 의사결정
 
