@@ -26,28 +26,30 @@
 
 ### 시스템 아키텍처
 
-<img src="DOC/img/시스템%20아키텍쳐.png" width="800" alt="시스템 아키텍처" />
+<img src="docs/img/시스템%20아키텍쳐.png" width="800" alt="시스템 아키텍처" />
 
-상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/DOC/docs/시스템%20아키텍쳐.html)
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/시스템%20아키텍쳐.html)
 
 
 
 ### 기술 아키텍처
 
-<img src="DOC/img/기술%20아키텍처%20.png" width="800" alt="기술 아키텍처" />
+<img src="docs/img/기술%20아키텍처%20.png" width="800" alt="기술 아키텍처" />
 
-상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/DOC/docs/기술%20아키텍쳐.html)
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/기술%20아키텍쳐.html)
 
 ### CI/CD 파이프 라인
 
-<img src="DOC/img/cicd-pipeline.png" width="800" alt="CI/CD 파이프라인" />
+<img src="docs/img/cicd-pipeline.png" width="800" alt="CI/CD 파이프라인" />
+
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/배포%20파이프라인.html)
 
 
 ## ERD
 
 핵심 엔티티 관계입니다. `MARKET_INDEX`, `EXCHANGE`, `NEWS`는 다른 엔티티와 JPA 연관관계로 매핑돼 있지 않은 독립 테이블이라 다이어그램에서는 제외했습니다(`NEWS.stock_code`는 FK가 아닌 단순 컬럼). `RefreshToken`도 `email` 문자열로만 연결되고 `User`와 FK 매핑은 없습니다.
 
-> 상세 문서: [`ERD.md`](DOC/docs/ERD.md) · 시각화: [바로 보기](https://project-valuepick.github.io/valuepick/DOC/docs/erd.html) 
+> 상세 문서: [`ERD.md`](docs/ERD.md) · 시각화: [바로 보기](https://project-valuepick.github.io/valuepick/erd.html) 
 
 ```mermaid
 erDiagram
@@ -183,19 +185,19 @@ erDiagram
 ### 종목 스크리닝
 - 전체 종목 목록 조회 · PER/PBR/ROE/배당수익률 범위 필터 · 정렬 · 페이징 · 종목명 검색
 
-  <img src="DOC/GIF/listpage-1.gif" width="800" alt="listpage-1" />
+  <img src="docs/GIF/listpage-1.gif" width="800" alt="listpage-1" />
 
 - 종목 상세: 재무제표(손익계산서·재무상태표) 연도별 추이, 투자지표, 관련 뉴스, Canvas 차트
 
-  <img src="DOC/GIF/detailpage-1.gif" width="800" alt="detailpage-1" />
+  <img src="docs/GIF/detailpage-1.gif" width="800" alt="detailpage-1" />
 
 - 홈 화면: 코스피 지수·환율 위젯, TOP10 추천 종목, 4대 랭킹(저PER/저PBR/고ROE/고배당) — 10초 주기 실시간 시세 갱신
 
-  <img src="DOC/GIF/mainpage-1.gif" width="800" alt="mainpage-1" />
+  <img src="docs/GIF/mainpage-1.gif" width="800" alt="mainpage-1" />
 
 - TOP100 랭킹: Piotroski F-Score + 7개 팩터 가중 스코어링 결과 페이지
 
-  <img src="DOC/GIF/top100-1.gif" width="800" alt="top100-1" />
+  <img src="docs/GIF/top100-1.gif" width="800" alt="top100-1" />
 
 ### 투자지표 스코어링 엔진
 - **투자지표 계산**: EPS·BPS·PER·PBR·ROE·ROA·부채비율·배당수익률·모멘텀(12-1)·EPS성장률, 외화 재무제표는 환율 환산 후 계산
@@ -205,21 +207,21 @@ erDiagram
 ### 회원/인증
 - JWT(Access/Refresh) 기반 회원가입·로그인·토큰 재발급
 
-  <img src="DOC/GIF/login-1.gif" width="800" alt="login-1" />
+  <img src="docs/GIF/login-1.gif" width="800" alt="login-1" />
 
 - 마이페이지: 닉네임/비밀번호 변경, 관심종목 관리, 회원탈퇴(soft delete, 30일 유예 후 스케줄러가 완전 삭제)
 
-  <img src="DOC/GIF/mypage-1.gif" width="800" alt="mypage-1" />
+  <img src="docs/GIF/mypage-1.gif" width="800" alt="mypage-1" />
 
 - 관심종목 등록/해제
 
-  <img src="DOC/GIF/favorite-1.gif" width="800" alt="favorite-1" />
+  <img src="docs/GIF/favorite-1.gif" width="800" alt="favorite-1" />
 
 ### 투자일지
 - 종목별 매수/매도 기록, 보유/완료 상태 관리, 메모, 제목 수정, 공유 여부 토글
 - 카테고리·기간·검색 조건 페이징 조회
 
-  <img src="DOC/GIF/invest-1.gif" width="800" alt="invest-1" />
+  <img src="docs/GIF/invest-1.gif" width="800" alt="invest-1" />
 
 ## 폴더 구조
 
