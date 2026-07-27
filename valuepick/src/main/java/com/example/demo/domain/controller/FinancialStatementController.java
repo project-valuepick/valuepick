@@ -3,6 +3,7 @@ package com.example.demo.domain.controller;
 import com.example.demo.domain.dto.FinancialStatementDto;
 import com.example.demo.domain.service.FinancialStatementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,8 @@ public class FinancialStatementController {
 
     @Operation(summary = "종목별 재무제표 조회", description = "지정한 종목코드(stockCode)의 재무제표 목록을 조회한다.")
     @GetMapping
-    public List<FinancialStatementDto> getFinancialStatements(@PathVariable String stockCode) {
+    public List<FinancialStatementDto> getFinancialStatements(
+            @Parameter(description = "종목코드", example = "005930") @PathVariable String stockCode) {
         return financialStatementService.getFinancialStatements(stockCode);
     }
 }

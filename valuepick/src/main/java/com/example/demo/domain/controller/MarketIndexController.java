@@ -3,6 +3,7 @@ package com.example.demo.domain.controller;
 import com.example.demo.domain.dto.MarketIndexDto;
 import com.example.demo.domain.service.MarketIndexService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ public class MarketIndexController {
 
     @Operation(summary = "특정 날짜 코스피 지수 수집", description = "지정한 날짜(basDd, yyyyMMdd 형식, 예: 20260613)의 코스피 지수를 수집하여 저장한다.")
     @GetMapping("/collect/{basDd}")
-    public ResponseEntity<List<MarketIndexDto>> collect(@PathVariable String basDd) {
+    public ResponseEntity<List<MarketIndexDto>> collect(
+            @Parameter(description = "수집 기준일 (yyyyMMdd)", example = "20260613") @PathVariable String basDd) {
         List<MarketIndexDto> result = marketIndexService.fetchAndSave(basDd);
         return ResponseEntity.ok(result);
     }

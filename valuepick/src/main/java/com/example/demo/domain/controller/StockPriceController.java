@@ -2,6 +2,7 @@ package com.example.demo.domain.controller;
 
 import com.example.demo.domain.service.StockPriceCollector;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ public class StockPriceController {
     @Operation(summary = "전체 종목 주가 수집", description = "날짜 하나만 입력하면 단일 날짜, 두 개 입력하면 기간(startDate~endDate)으로 전체 종목 주가를 수집한다. 비동기로 즉시 응답 후 백그라운드에서 수집을 진행한다.")
     @GetMapping({"/collect/{startDate}", "/collect/{startDate}/{endDate}"})
     public ResponseEntity<Map<String, String>> collect(
-            @PathVariable String startDate,
-            @PathVariable(required = false) String endDate
+            @Parameter(description = "수집 시작일 (yyyyMMdd)", example = "20260101") @PathVariable String startDate,
+            @Parameter(description = "수집 종료일 (yyyyMMdd, 생략 시 시작일과 동일)", example = "20260131") @PathVariable(required = false) String endDate
     ) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate start = LocalDate.parse(startDate, formatter);
