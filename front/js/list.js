@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!el) return;
     if (totalPages <= 1) { el.innerHTML = ''; return; }
 
-    const GROUP = 10;
+    const GROUP = window.innerWidth <= 480 ? 5 : 10;
     const groupStart = Math.floor(activePage / GROUP) * GROUP;
     const groupEnd = Math.min(groupStart + GROUP, totalPages);
 

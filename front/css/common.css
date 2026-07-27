@@ -462,7 +462,7 @@ button {
     display: flex;
     flex-direction: column;
     position: absolute;
-    top: var(--header-h);
+    top: 100%;
     left: 0;
     right: 0;
     background: var(--surface);
@@ -478,5 +478,15 @@ button {
 }
 
 @media (max-width: 480px) {
-  .header-right .btn-text { display: none; }
+  .header-inner {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--header-h);
+    padding: 10px 16px;
+    row-gap: 8px;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
