@@ -4,6 +4,7 @@ import com.example.demo.domain.dto.*;
 import com.example.demo.domain.dto.request.*;
 import com.example.demo.domain.service.InvestmentJournalService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +27,11 @@ public class InvestmentJournalController {
     @GetMapping
     public ResponseEntity<JournalPageResult> getList(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "all") String category,
-            @RequestParam(defaultValue = "") String q,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(defaultValue = "0") int page) {
+            @Parameter(description = "카테고리 필터", example = "all") @RequestParam(defaultValue = "all") String category,
+            @Parameter(description = "검색어 (제목/종목명)") @RequestParam(defaultValue = "") String q,
+            @Parameter(description = "조회 시작일") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @Parameter(description = "조회 종료일") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(
                 journalService.getList(userDetails.getUsername(), category, q, from, to, page));
     }
@@ -39,7 +40,7 @@ public class InvestmentJournalController {
     @GetMapping("/position/{journalId}")
     public ResponseEntity<InvestmentJournalDetailDto> getDetail(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long journalId) {
+            @Parameter(description = "포지션(투자일지) ID", example = "1") @PathVariable Long journalId) {
         return ResponseEntity.ok(
                 journalService.getDetail(userDetails.getUsername(), journalId));
     }
@@ -57,7 +58,7 @@ public class InvestmentJournalController {
     @PostMapping("/{journalId}/buy")
     public ResponseEntity<Void> addBuy(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long journalId,
+            @Parameter(description = "포지션(투자일지) ID", example = "1") @PathVariable Long journalId,
             @RequestBody AddBuyRequest req) {
         journalService.addBuy(userDetails.getUsername(), journalId, req);
         return ResponseEntity.ok().build();
@@ -67,7 +68,7 @@ public class InvestmentJournalController {
     @PostMapping("/{journalId}/sell")
     public ResponseEntity<Void> addSell(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long journalId,
+            @Parameter(description = "포지션(투자일지) ID", example = "1") @PathVariable Long journalId,
             @RequestBody AddSellRequest req) {
         journalService.addSell(userDetails.getUsername(), journalId, req);
         return ResponseEntity.ok().build();
@@ -77,8 +78,8 @@ public class InvestmentJournalController {
     @PatchMapping("/{type}/{id}/title")
     public ResponseEntity<Void> updateTitle(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable String type,
-            @PathVariable Long id,
+            @Parameter(description = "대상 종류", example = "position") @PathVariable String type,
+            @Parameter(description = "대상 ID", example = "1") @PathVariable Long id,
             @RequestBody UpdateTitleRequest req) {
         journalService.updateTitle(userDetails.getUsername(), type, id, req);
         return ResponseEntity.ok().build();
@@ -88,8 +89,8 @@ public class InvestmentJournalController {
     @PatchMapping("/{type}/{id}/share")
     public ResponseEntity<Void> toggleShare(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable String type,
-            @PathVariable Long id) {
+            @Parameter(description = "대상 종류", example = "position") @PathVariable String type,
+            @Parameter(description = "대상 ID", example = "1") @PathVariable Long id) {
         journalService.toggleShare(userDetails.getUsername(), type, id);
         return ResponseEntity.ok().build();
     }
@@ -98,7 +99,7 @@ public class InvestmentJournalController {
     @PatchMapping("/position/{journalId}/note")
     public ResponseEntity<Void> updateNote(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long journalId,
+            @Parameter(description = "포지션(투자일지) ID", example = "1") @PathVariable Long journalId,
             @RequestBody UpdateNoteRequest req) {
         journalService.updateNote(userDetails.getUsername(), journalId, req);
         return ResponseEntity.ok().build();
@@ -108,8 +109,8 @@ public class InvestmentJournalController {
     @DeleteMapping("/{type}/{id}")
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable String type,
-            @PathVariable Long id) {
+            @Parameter(description = "대상 종류", example = "position") @PathVariable String type,
+            @Parameter(description = "대상 ID", example = "1") @PathVariable Long id) {
         journalService.delete(userDetails.getUsername(), type, id);
         return ResponseEntity.ok().build();
     }
