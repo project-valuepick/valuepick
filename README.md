@@ -223,6 +223,16 @@ erDiagram
 
   <img src="docs/GIF/invest-1.gif" width="800" alt="invest-1" />
 
+### 반응형
+
+| 홈 화면 | 종목 목록 | TOP100 랭킹 |
+|---|---|---|
+| <img src="docs/img/resposive-main.PNG" width="200" height="340" alt="responsive-main" /> | <img src="docs/img/resposive-list.PNG" width="200" height="340" alt="responsive-list" /> | <img src="docs/img/resposive-rank.PNG" width="200" height="340" alt="responsive-rank" /> |
+
+| 투자일지 | 관심종목 | 마이페이지 |
+|---|---|---|
+| <img src="docs/img/resposive-journal.PNG" width="200" height="340" alt="responsive-journal" /> | <img src="docs/img/resposive-favaorit.PNG" width="200" height="340" alt="responsive-favorite" /> | <img src="docs/img/resposive-mypage.PNG" width="200" height="340" alt="responsive-mypage" /> |
+
 ## 폴더 구조
 
 ```
@@ -267,15 +277,9 @@ invest-project/
 
 ## API 개요
 
-| 경로 | 설명 | 로그인 필요 여부 |
-|---|---|---|
-| `POST /api/auth/register`, `/login`, `/refresh` | 회원가입 · 로그인 · 토큰 재발급 | 불필요 (로그인 이전 단계이므로) |
-| `GET /info/**` | 종목 목록/필터/검색/랭킹/TOP10·100/지수/환율 조회 | 불필요 |
-| `GET /api/stocks/**` | 종목 상세/뉴스/검색/재무제표 조회 | 불필요 |
-| `/api/favorites/**` | 관심종목 등록/조회/해제 | **필요** |
-| `/api/journal/**` | 투자일지 CRUD | **필요** |
-| `/api/users/me/**` | 마이페이지 (내 정보, 닉네임/비밀번호 변경, 탈퇴) | **필요** |
-| `/admin/**`, `/company/**`, `/api/admin/**`, `/api/top100/admin/**` | 데이터 수집 트리거, TOP100 수동 재계산 등 관리자 작업 | **필요 (ADMIN 권한)** |
+<img src="docs/img/swagger.PNG" width="800" alt="swagger" />
+
+상세 이미지 : [링크](https://project-valuepick.github.io/valuepick/swagger-ui-static.html)
 
 ## 트러블슈팅 / 기술적 의사결정
 
