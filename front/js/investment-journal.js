@@ -296,7 +296,7 @@ function renderPagination() {
   const totalPages = listData.totalPages || 1;
   if (totalPages <= 1) { journalPaginationEl.innerHTML = ''; return; }
 
-  const GROUP = 10;
+  const GROUP = window.innerWidth <= 480 ? 5 : 10;
   const groupStart = Math.floor(currentPage / GROUP) * GROUP;
   const groupEnd = Math.min(groupStart + GROUP, totalPages);
   let html = '';
