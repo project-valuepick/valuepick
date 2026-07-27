@@ -1,11 +1,15 @@
 package com.example.demo.domain.controller;
 
 import com.example.demo.domain.service.FinancialIndicatorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "투자지표 계산 (관리자)", description = "재무제표 데이터를 기반으로 투자지표(PER, PBR, ROE 등)를 계산하는 관리자 API")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -14,9 +18,11 @@ public class FinancialIndicatorController {
 
     private final FinancialIndicatorService financialIndicatorService;
 
-    // 전체 회사 투자지표 계산 실행 - year를 기준으로 FinancialStatement 데이터 조회 후 StockIndicator 저장
+    @Operation(summary = "투자지표 계산", description = "지정한 연도(year)와 보고서 코드(reprtCode)를 기준으로 재무제표 데이터를 조회하여 전체 회사의 투자지표를 계산하고 저장한다.")
     @GetMapping("/calculate/{year}/{reprtCode}")
-    public ResponseEntity<String> calculate(@PathVariable String year,@PathVariable String reprtCode) {
+    public ResponseEntity<String> calculate(
+            @Parameter(description = "계산 대상 연도", example = "2025") @PathVariable String year,
+            @Parameter(description = "보고서 코드 (11011=사업보고서)", example = "11011") @PathVariable String reprtCode) {
         log.info("지표 계산 요청: year={}", year);
         financialIndicatorService.calculateAll(year,reprtCode);
         return ResponseEntity.ok(year + "년 지표 계산 완료");
