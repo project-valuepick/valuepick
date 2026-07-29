@@ -417,20 +417,19 @@ docker compose up --build -d
 
 <div align="center">
 
-<table border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+<table cellspacing="0" cellpadding="8">
 <tr>
-<th align="center" style="border: 1px solid #999; text-align: center;">팀원구성</th>
-<th align="center" style="border: 1px solid #999; text-align: center;">담당역할</th>
+<th align="center">팀원구성</th>
+<th align="center">담당역할</th>
 </tr>
 <tr>
-<td align="center" style="border: 1px solid #999; padding: 0;">
-<table cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; border: none;">
-<tr><td align="center" style="border: none; padding-top: 16px; padding-bottom: 8px;"><img src="https://avatars.githubusercontent.com/u/155594550?v=4" height="100" width="100"></td></tr>
-<tr><td align="center" style="border: none;"><b>강현욱</b><br/><a href="https://github.com/kanghyunuk-dev">@kanghyunuk-dev</a></td></tr>
-</table>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/155594550?v=4" width="100" height="100"><br>
+<b>강현욱</b><br>
+<a href="https://github.com/kanghyunuk-dev">@kanghyunuk-dev</a>
 </td>
-<td style="border: 1px solid #999;">
-<ul style="margin: 0; padding-left: 1.2em;">
+<td>
+<ul>
 <li>팀장 (기획, 총괄)</li>
 <li>로그인/회원가입, 마이페이지 (Spring Security/JWT 인증 체계 설계)</li>
 <li>전역 예외처리 (GlobalExceptionHandler)</li>
@@ -439,14 +438,13 @@ docker compose up --build -d
 </td>
 </tr>
 <tr>
-<td align="center" style="border: 1px solid #999; padding: 0;">
-<table cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; border: none;">
-<tr><td align="center" style="border: none; padding-top: 16px; padding-bottom: 8px;"><img src="https://avatars.githubusercontent.com/u/144120819?v=4" height="100" width="100"></td></tr>
-<tr><td align="center" style="border: none;"><b>김정희</b><br/><a href="https://github.com/kinetas">@kinetas</a></td></tr>
-</table>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/144120819?v=4" width="100" height="100"><br>
+<b>김정희</b><br>
+<a href="https://github.com/kinetas">@kinetas</a>
 </td>
-<td style="border: 1px solid #999;">
-<ul style="margin: 0; padding-left: 1.2em;">
+<td>
+<ul>
 <li>DB 설계</li>
 <li>투자일지</li>
 <li>MVC 구조의 시스템 아키텍처 설계</li>
@@ -456,14 +454,13 @@ docker compose up --build -d
 </td>
 </tr>
 <tr>
-<td align="center" style="border: 1px solid #999; padding: 0;">
-<table cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; border: none;">
-<tr><td align="center" style="border: none; padding-top: 16px; padding-bottom: 8px;"><img src="https://avatars.githubusercontent.com/u/263509822?v=4" height="100" width="100"></td></tr>
-<tr><td align="center" style="border: none;"><b>박형규</b><br/><a href="https://github.com/parkhyeonggyu15">@parkhyeonggyu15</a></td></tr>
-</table>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/263509822?v=4" width="100" height="100"><br>
+<b>박형규</b><br>
+<a href="https://github.com/parkhyeonggyu15">@parkhyeonggyu15</a>
 </td>
-<td style="border: 1px solid #999;">
-<ul style="margin: 0; padding-left: 1.2em;">
+<td>
+<ul>
 <li>관심종목</li>
 <li>상세페이지 API 구현 (수익 및 자산 추이, 재무제표 상세)</li>
 <li>금융 뉴스 크롤링</li>
@@ -471,14 +468,13 @@ docker compose up --build -d
 </td>
 </tr>
 <tr>
-<td align="center" style="border: 1px solid #999; padding: 0;">
-<table cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; border: none;">
-<tr><td align="center" style="border: none; padding-top: 16px; padding-bottom: 8px;"><img src="https://avatars.githubusercontent.com/u/127188283?v=4" height="100" width="100"></td></tr>
-<tr><td align="center" style="border: none;"><b>정승원</b><br/><a href="https://github.com/jsh340866">@jsh340866</a></td></tr>
-</table>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/127188283?v=4" width="100" height="100"><br>
+<b>정승원</b><br>
+<a href="https://github.com/jsh340866">@jsh340866</a>
 </td>
-<td style="border: 1px solid #999;">
-<ul style="margin: 0; padding-left: 1.2em;">
+<td>
+<ul>
 <li>DB 설계</li>
 <li>외부 API 호출 데이터 수집 파이프라인 설계 및 구현 (DART 재무제표·기업정보, 주가, 지수, 환율)</li>
 <li>투자지표(PER·PBR·ROE·부채비율·모멘텀 등) 계산 및 Piotroski F-Score, TOP100 스코어링 엔진 구현</li>
@@ -486,16 +482,12 @@ docker compose up --build -d
 </td>
 </tr>
 <tr>
-<td align="center" style="border: 1px solid #999; padding: 0;">
-<table cellspacing="0" cellpadding="8" style="border-collapse: collapse; width: 100%; border: none;">
-<tr><td align="center" style="border: none; padding-top: 16px; padding-bottom: 8px;">
-<div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 56px; line-height: 1;">🤝</div>
-</td></tr>
-<tr><td align="center" style="border: none;"><b>공통작업</b></td></tr>
-</table>
+<td align="center">
+<h1>🤝</h1>
+<b>공통작업</b>
 </td>
-<td style="border: 1px solid #999;">
-<ul style="margin: 0; padding-left: 1.2em;">
+<td>
+<ul>
 <li>인프라 구축/배포 (Docker, Nginx, Jenkins CI/CD)</li>
 </ul>
 </td>
