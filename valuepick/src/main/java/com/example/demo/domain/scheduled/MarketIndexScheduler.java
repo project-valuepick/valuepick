@@ -21,7 +21,6 @@ public class MarketIndexScheduler {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    // 월-금 08:30 수집 - KRX 지수는 08:00경 확정되므로 여유를 두고 조회 (전 영업일자, 월요일은 금요일자)
     @Scheduled(cron = "0 30 8 * * MON-FRI", zone = "Asia/Seoul")
     public void collectMarketIndex() {
         try {
