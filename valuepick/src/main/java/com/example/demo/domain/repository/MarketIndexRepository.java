@@ -12,4 +12,6 @@ public interface MarketIndexRepository extends JpaRepository<MarketIndex, Long> 
     void deleteByBasDdBefore(LocalDate date);
 
     Optional<MarketIndex> findTop1ByIdxNmOrderByBasDdDesc(String idxNm);
+
+    boolean existsByBasDd(LocalDate basDd);
 }
