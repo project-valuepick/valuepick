@@ -21,13 +21,13 @@ public class MarketIndexScheduler {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    // 월-금 새벽 1시 10분 수집 - 지수는 당일 장마감(15:30) 이후 확정되므로 전 영업일자 조회
-    // (월요일은 직전 영업일인 금요일자를 조회)
-    @Scheduled(cron = "0 10 1 * * MON-FRI", zone = "Asia/Seoul")
+    // 월-금 08:30 수집 - KRX 지수는 08:00경 확정되므로 여유를 두고 조회 (전 영업일자, 월요일은 금요일자)
+    @Scheduled(cron = "0 30 8 * * MON-FRI", zone = "Asia/Seoul")
     public void collectMarketIndex() {
         try {
             LocalDate targetDate = LocalDate.now().minusDays(
                     LocalDate.now().getDayOfWeek() == DayOfWeek.MONDAY ? 3 : 1);
+
             log.info("[MarketIndexScheduler] 코스피 지수 수집 시작 - date={}", targetDate);
             marketIndexService.fetchAndSave(targetDate.format(DATE_FORMAT));
             log.info("[MarketIndexScheduler] 코스피 지수 수집 완료");

@@ -299,11 +299,11 @@ invest-project/
 | 시각 | 스케줄러 | 작업 |
 |---|---|---|
 | 01:00 (평일) | ExchangeScheduler | 환율 수집 |
-| 01:10 (평일) | MarketIndexScheduler | 코스피 지수 수집 |
 | 01:20 (평일) | StockPriceScheduler | 주가 수집 |
 | 01:50 (평일) | IndicatorScheduler | 투자지표 계산 (PER/PBR/ROE/F-Score/모멘텀 등) |
 | 02:00 (평일) | Top100Scheduler | TOP100 스코어 계산 |
 | 02:30~02:35 | 각 스케줄러 | 7일 이전 시세/지수/환율/TOP100 데이터 정리 |
+| 08:30 (평일) | MarketIndexScheduler | 코스피 지수 수집 (KRX 확정 시각 08:00 이후 여유를 두고 조회) |
 | 매시 정각 | NewsScheduler | 종목별 뉴스 수집 |
 | 매년 1월 1일 | CompanyScheduler | 기업정보(DART) 수집 |
 | 매년 4월 1일 | FinancialScheduler / DividendScheduler | 사업보고서·배당 정보 수집 |
@@ -367,9 +367,11 @@ DART API로 전체 상장사 재무제표를 수집하다 보니 신경 쓸 게 
 
 ### 6. 스케줄러 파이프라인 순서 보장 — cron 분 단위 스태거링
 
-주가 → 지표 계산 → TOP100 스코어링은 앞 단계 결과에 의존하는 순차 파이프라인인데, `@Scheduled`는 각자 독립적으로 트리거되다 보니 순서를 강제할 방법이 마땅치 않았습니다. 그래서 크론의 분(minute) 값을 의도적으로 어긋나게 배치해서 앞 단계가 끝날 시간을 확보하는 방식을 택했습니다: `ExchangeScheduler` 01:00 → `MarketIndexScheduler` 01:10 → `StockPriceScheduler` 01:20 → [IndicatorScheduler](valuepick/src/main/java/com/example/demo/domain/scheduled/IndicatorScheduler.java#L18-20) 01:50(주석: "StockPriceScheduler 수집 완료 후, Top100Scheduler 이전") → `Top100Scheduler` 02:00. 삭제 스케줄러들도 02:30, TOP100 삭제만 02:35로 한 단계 늦춰서 실행되게 했습니다.
+주가 → 지표 계산 → TOP100 스코어링은 앞 단계 결과에 의존하는 순차 파이프라인인데, `@Scheduled`는 각자 독립적으로 트리거되다 보니 순서를 강제할 방법이 마땅치 않았습니다. 그래서 크론의 분(minute) 값을 의도적으로 어긋나게 배치해서 앞 단계가 끝날 시간을 확보하는 방식을 택했습니다: `ExchangeScheduler` 01:00 → `StockPriceScheduler` 01:20 → [IndicatorScheduler](valuepick/src/main/java/com/example/demo/domain/scheduled/IndicatorScheduler.java#L18-20) 01:50(주석: "StockPriceScheduler 수집 완료 후, Top100Scheduler 이전") → `Top100Scheduler` 02:00. 삭제 스케줄러들도 02:30, TOP100 삭제만 02:35로 한 단계 늦춰서 실행되게 했습니다.
 
 같은 파일들에 "전 영업일자 조회" 로직(`LocalDate.now().minusDays(요일==월요일 ? 3 : 1)`)도 반복해서 넣었습니다. 월요일에만 3일을 빼는 이유는 주말을 건너뛰고 직전 영업일(금요일)을 맞추기 위해서입니다.
+
+`MarketIndexScheduler`(코스피 지수 수집)만 이 파이프라인에서 떼어내 08:30에 독립적으로 돌립니다. 처음엔 다른 스케줄러들처럼 01:10에 맞춰뒀는데, 실제 운영 로그를 보니 KRX 지수 데이터가 그 시각까지 확정되지 않아 `IllegalStateException`으로 매번 실패하고 있었습니다. KRX 확정 시각이 08:00 전후인 걸 확인하고 나서 08:30으로 옮겨 여유를 뒀습니다.
 
 [IndicatorScheduler.activeYear()](valuepick/src/main/java/com/example/demo/domain/scheduled/IndicatorScheduler.java#L31-36)는 "사업보고서는 매년 4월 1일에 전년도분이 공시되므로, 그 전엔 재작년 데이터가 이후엔 작년 데이터가 최신"이라는 근거로 4월 1일을 기준점 삼아 조회 연도를 나누게 했습니다.
 
