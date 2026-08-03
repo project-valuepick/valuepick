@@ -1,6 +1,6 @@
 # ValuePick — ERD 설계도
 
-`valuepick/src/main/java/com/example/demo/domain/entity/` 하위 22개 엔티티 클래스를 실제로 전부 읽고 확인한 뒤 작성한 문서입니다. `README2.md`의 ERD 섹션이 핵심 엔티티만 축약해서 보여준다면, 이 문서는 컬럼 단위까지 전부 담은 상세판입니다.
+`valuepick/src/main/java/com/example/demo/domain/entity/` 하위 22개 엔티티 클래스를 실제로 전부 읽고 확인한 뒤 작성한 문서입니다. 컬럼 단위까지 전부 담은 상세판입니다.
 
 ## 목차
 
@@ -250,7 +250,7 @@ erDiagram
 
 ## 설계 특이사항
 
-1. **자연키(natural key) 기반 읽기 전용 연관관계가 많다.** `StockPrice`, `StockIndicator`, `DividendInfo`, `Top100`, `UserFavorite`의 `company`/`user` 연관관계는 전부 `insertable=false, updatable=false`로 선언되어 있습니다. 즉 실제 INSERT/UPDATE는 `@Id` 컬럼(예: `srtn_cd`, `corp_code`, `stock_code`, `user_id`)을 통해서만 이루어지고, 연관관계 필드는 조회(JOIN)용으로만 씁니다. `Top100Service`에서 N+1을 막기 위해 `JOIN FETCH`를 쓴 이유도 이 구조 때문입니다(자세한 내용은 `README2.md` 참고).
+1. **자연키(natural key) 기반 읽기 전용 연관관계가 많다.** `StockPrice`, `StockIndicator`, `DividendInfo`, `Top100`, `UserFavorite`의 `company`/`user` 연관관계는 전부 `insertable=false, updatable=false`로 선언되어 있습니다. 즉 실제 INSERT/UPDATE는 `@Id` 컬럼(예: `srtn_cd`, `corp_code`, `stock_code`, `user_id`)을 통해서만 이루어지고, 연관관계 필드는 조회(JOIN)용으로만 씁니다. `Top100Service`에서 N+1을 막기 위해 `JOIN FETCH`를 쓴 이유도 이 구조 때문입니다.
 2. **`Company`를 참조하는 키가 통일되어 있지 않다.** 대부분은 `stock_code`로 참조하지만 `DIVIDEND_INFO`만 `corp_code`로 참조합니다. DART 배당 정보 API 응답이 `corp_code` 기준이라 그대로 반영된 결과입니다.
 3. **복합키 엔티티는 전부 `@IdClass`를 쓴다.** `StockPrice`, `DividendInfo`, `Top100`, `UserFavorite` 네 곳 모두 별도의 `*Id` Serializable 클래스(`StockPriceId`, `DividendInfoId`, `Top100Id`, `UserFavoriteId`)를 사용합니다.
 4. **비정규화 컬럼이 의도적으로 존재한다.** `Top100.corp_code`, `InvestmentPosition/Buy/Sell.stock_code`·`corp_name`은 정규화하면 조인으로 구할 수 있는 값이지만, 조회 성능과 이력 보존(종목명이 바뀌어도 당시 기록 유지) 목적으로 중복 저장되어 있습니다.
