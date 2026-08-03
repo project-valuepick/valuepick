@@ -3,6 +3,7 @@ package com.example.demo.domain.repository;
 import com.example.demo.domain.entity.Exchange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,6 +16,7 @@ public interface ExchangeRepository extends JpaRepository<Exchange, String> {
     List<Exchange> findByBaseDate(LocalDate baseDate);
 
     // 데이터 삭제 매서드
+    @Transactional
     void deleteByBaseDateBefore(LocalDate date);
    
     List<Exchange> findAllByOrderByBaseDate();
