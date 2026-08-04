@@ -294,20 +294,23 @@ invest-project/
 
 ## 데이터 파이프라인
 
-매일 새벽(Asia/Seoul 기준) 배치가 순차 실행되어 최신 데이터를 반영합니다.
+Asia/Seoul 기준으로 배치가 순차 실행되어 최신 데이터를 반영합니다. 환율 수집은 새벽, 주가 수집~TOP100 계산 체인은 오후로 나뉘어 있습니다.
 
 | 시각 | 스케줄러 | 작업 |
 |---|---|---|
-| 01:00 (평일) | ExchangeScheduler | 환율 수집 |
-| 01:20 (평일) | StockPriceScheduler | 주가 수집 |
-| 01:50 (평일) | IndicatorScheduler | 투자지표 계산 (PER/PBR/ROE/F-Score/모멘텀 등) |
-| 02:00 (평일) | Top100Scheduler | TOP100 스코어 계산 |
-| 02:30~02:35 | 각 스케줄러 | 7일 이전 시세/지수/환율/TOP100 데이터 정리 |
+| 00:00 (매일) | UserCleanupScheduler | 탈퇴 30일 경과 유저 완전 삭제 |
+| 01:00 (평일) | ExchangeScheduler | 환율 수집 (전 영업일자) |
+| 01:00 (매년 1월 1일) | CompanyScheduler | 기업정보(DART) 수집 |
+| 01:00 (매년 4월 1일) | FinancialScheduler | 사업보고서 수집 |
+| 02:00 (매년 4월 1일) | DividendScheduler | 배당 정보 수집 |
+| 02:30 (매일) | StockPriceScheduler / MarketIndexScheduler | 7일 이전 주가·코스피 지수 데이터 정리 (주가는 모멘텀 계산용 1개월전·12개월전 구간은 보존) |
+| 02:30 (평일) | ExchangeScheduler | 7일 이전 환율 데이터 정리 |
+| 02:35 (매일) | Top100Scheduler | 7일 이전 TOP100 데이터 정리 |
 | 08:30 (평일) | MarketIndexScheduler | 코스피 지수 수집 (KRX 확정 시각 08:00 이후 여유를 두고 조회) |
+| 14:00 (평일) | StockPriceScheduler | 주가 수집 (전 영업일자 + 모멘텀 계산용 1개월전·12개월전 구간) |
+| 14:30 (평일) | IndicatorScheduler | 투자지표 계산 (PER/PBR/ROE/F-Score/모멘텀 등) |
+| 14:40 (평일) | Top100Scheduler | TOP100 스코어 계산 |
 | 매시 정각 | NewsScheduler | 종목별 뉴스 수집 |
-| 매년 1월 1일 | CompanyScheduler | 기업정보(DART) 수집 |
-| 매년 4월 1일 | FinancialScheduler / DividendScheduler | 사업보고서·배당 정보 수집 |
-| 매일 자정 | UserCleanupScheduler | 탈퇴 30일 경과 유저 완전 삭제 |
 
 ## API 개요
 
@@ -367,7 +370,7 @@ DART API로 전체 상장사 재무제표를 수집하다 보니 신경 쓸 게 
 
 ### 6. 스케줄러 파이프라인 순서 보장 — cron 분 단위 스태거링
 
-주가 → 지표 계산 → TOP100 스코어링은 앞 단계 결과에 의존하는 순차 파이프라인인데, `@Scheduled`는 각자 독립적으로 트리거되다 보니 순서를 강제할 방법이 마땅치 않았습니다. 그래서 크론의 분(minute) 값을 의도적으로 어긋나게 배치해서 앞 단계가 끝날 시간을 확보하는 방식을 택했습니다: `ExchangeScheduler` 01:00 → `StockPriceScheduler` 01:20 → [IndicatorScheduler](valuepick/src/main/java/com/example/demo/domain/scheduled/IndicatorScheduler.java#L18-20) 01:50(주석: "StockPriceScheduler 수집 완료 후, Top100Scheduler 이전") → `Top100Scheduler` 02:00. 삭제 스케줄러들도 02:30, TOP100 삭제만 02:35로 한 단계 늦춰서 실행되게 했습니다.
+주가 → 지표 계산 → TOP100 스코어링은 앞 단계 결과에 의존하는 순차 파이프라인인데, `@Scheduled`는 각자 독립적으로 트리거되다 보니 순서를 강제할 방법이 마땅치 않았습니다. 그래서 크론의 분(minute) 값을 의도적으로 어긋나게 배치해서 앞 단계가 끝날 시간을 확보하는 방식을 택했습니다: `StockPriceScheduler` 14:00 → [IndicatorScheduler](valuepick/src/main/java/com/example/demo/domain/scheduled/IndicatorScheduler.java#L18-20) 14:30(주석: "StockPriceScheduler 수집 완료 후, Top100Scheduler 이전") → `Top100Scheduler` 14:40. 삭제 스케줄러들은 파이프라인과 별개로 새벽 02:30, TOP100 삭제만 02:35로 한 단계 늦춰서 실행되게 했습니다(삭제는 날짜 단위 cutoff라 실행 시각과 무관하게 안전).
 
 같은 파일들에 "전 영업일자 조회" 로직(`LocalDate.now().minusDays(요일==월요일 ? 3 : 1)`)도 반복해서 넣었습니다. 월요일에만 3일을 빼는 이유는 주말을 건너뛰고 직전 영업일(금요일)을 맞추기 위해서입니다.
 

@@ -18,8 +18,9 @@ public class StockPriceScheduler {
     private final StockPriceCollector stockPriceCollector;
     private final StockPriceRepository stockPriceRepository;
 
-    // 월-금 새벽 1시 20분 수집 - 전 영업일자 기준 (월요일은 직전 영업일인 금요일자를 조회)
-    @Scheduled(cron = "0 20 1 * * MON-FRI", zone = "Asia/Seoul")
+    // 월-금 오후 2시 수집 - 전 영업일자 기준 (월요일은 직전 영업일인 금요일자를 조회)
+    // 공공데이터포털 주가 API는 기준일자로부터 영업일 하루 뒤 오후 1시 이후 반영되므로 새벽 수집 시 데이터가 없었음
+    @Scheduled(cron = "0 0 14 * * MON-FRI", zone = "Asia/Seoul")
     public void collectStockPrice() {
         try {
             LocalDate baseDate = LocalDate.now().minusDays(
@@ -43,13 +44,20 @@ public class StockPriceScheduler {
         stockPriceCollector.collect(rangeStart, targetDate);
     }
 
-    // 7일 이전 주가 데이터 새벽 2시 30분에 삭제
+    // 7일 이전 주가 데이터 새벽 2시 30분에 삭제 - 모멘텀 계산용 1개월전/12개월전 구간(각 ±5일)은 보존
     @Scheduled(cron = "0 30 2 * * *", zone = "Asia/Seoul")
     public void deleteOldStockPrice() {
         try {
+            LocalDate baseDate = LocalDate.now().minusDays(
+                    LocalDate.now().getDayOfWeek() == DayOfWeek.MONDAY ? 3 : 1);
             LocalDate cutoff = LocalDate.now().minusDays(7);
+            LocalDate oneMonthAgo = baseDate.minusMonths(1);
+            LocalDate twelveMonthsAgo = baseDate.minusMonths(12);
             log.info("[StockPriceScheduler] 7일 이전 주가 삭제 - cutoff={}", cutoff);
-            stockPriceRepository.deleteByBasDtBefore(cutoff);
+            stockPriceRepository.deleteOldExceptMomentumRange(
+                    cutoff,
+                    oneMonthAgo.minusDays(5), oneMonthAgo,
+                    twelveMonthsAgo.minusDays(5), twelveMonthsAgo);
         } catch (Exception e) {
             log.error("[StockPriceScheduler] 7일 이전 주가 삭제 실패", e);
         }
