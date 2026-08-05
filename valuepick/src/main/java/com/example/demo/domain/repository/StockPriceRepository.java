@@ -6,7 +6,9 @@ import com.example.demo.domain.entity.StockPriceId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +27,18 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, StockPri
     // 지정일 이전 중 가장 최근 종가 조회 - 모멘텀 계산 시 1개월전/12개월전 기준일이 휴장일일 수 있어서 사용
     Optional<StockPrice> findTopBySrtnCdAndBasDtLessThanEqualOrderByBasDtDesc(String srtnCd, LocalDate basDt);
 
-    // 7일 이전 데이터 삭제
+    // 7일 이전 데이터 삭제 - 모멘텀 계산용으로 보관 중인 1개월전/12개월전 구간(각 ±5일)은 제외
     @Transactional
-    void deleteByBasDtBefore(LocalDate date);
+    @Modifying
+    @Query("DELETE FROM StockPrice sp WHERE sp.basDt < :cutoff " +
+            "AND sp.basDt NOT BETWEEN :oneMonthRangeStart AND :oneMonthRangeEnd " +
+            "AND sp.basDt NOT BETWEEN :twelveMonthRangeStart AND :twelveMonthRangeEnd")
+    void deleteOldExceptMomentumRange(
+            @Param("cutoff") LocalDate cutoff,
+            @Param("oneMonthRangeStart") LocalDate oneMonthRangeStart,
+            @Param("oneMonthRangeEnd") LocalDate oneMonthRangeEnd,
+            @Param("twelveMonthRangeStart") LocalDate twelveMonthRangeStart,
+            @Param("twelveMonthRangeEnd") LocalDate twelveMonthRangeEnd);
 
     List<StockPrice> findBySrtnCdAndBasDtGreaterThanEqualOrderByBasDtAsc(String srtnCd, LocalDate basDt);
 }
