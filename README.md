@@ -9,6 +9,10 @@
 
 ## 목차
 
+- [개발동기](#개발동기)
+- [개발일정](#개발일정)
+- [개정이력](#개정이력)
+- [팀원 구성](#팀원-구성)
 - [아키텍처 설계도](#아키텍처-설계도)
 - [ERD](#erd)
 - [기술 스택](#기술-스택)
@@ -18,9 +22,117 @@
 - [API 개요](#api-개요)
 - [트러블슈팅 / 기술적 의사결정](#트러블슈팅--기술적-의사결정)
 - [실행 방법](#실행-방법)
-- [팀원 구성](#팀원-구성)
 - [1차 배포 범위](#1차-배포-범위)
 - [개선사항](#개선사항)
+
+## 개발동기
+
+평소 가치투자에 관심이 있었고, 재무제표 기반 지표로 저평가 우량주를 걸러주는 서비스를 직접 만들어보고 싶다는 생각에서 프로젝트를 시작했습니다.
+
+동시에 팀 프로젝트를 통해 익혀보고 싶은 기술적 목표도 명확했습니다. Spring Security와 JWT로 인증/인가 체계를 직접 설계해보는 것, DART·KRX·환율 등 이질적인 외부 API를 안정적으로 스케줄링해 파이프라인으로 엮어보는 것, 그리고 팀 단위로 도메인을 나눠 협업하며 Docker/Nginx/Jenkins 기반의 실제 배포 환경까지 경험해보는 것이 목표였습니다.
+
+## 개발일정
+
+| 기간 | 단계 | 주요 내용 |
+|---|---|---|
+| 2026-06-22 ~ 06-24 | 초기 세팅 | 프로젝트 구조 설계, DTO/Entity/DB 설정, 종목 조회·랭킹 API 초안, DART/KRX/환율 외부 API 연동 |
+| 2026-06-24 ~ 06-29 | 인증 & 데이터 파이프라인 (v0.1~v0.5) | Spring Security/JWT 인증, 회원가입·로그인, 스케줄러 기반 자동 수집, 투자지표·TOP100 스코어링 엔진 구현 |
+| 2026-06-30 ~ 07-08 | 핵심 기능 확장 (v0.6~v0.10) | 뉴스 크롤링, GlobalExceptionHandler, 마이페이지, 관심종목, 투자일지(매수/매도) 기능 구현 |
+| 2026-07-10 ~ 07-16 | 안정화 & 배포 준비 (v0.10.x~v0.11) | 스케줄러 시간대(KST) 및 순서 조정, CORS/보안 이슈 수정, Docker 기반 배포 구성 |
+| 2026-07-21 ~ 07-22 | 1차 배포 (v0.11~v1.2) | Docker/Nginx/Jenkins CI/CD 인프라 구축, TOP100 코스피 전용화, footer 등 마무리 UI 작업 |
+| 2026-07-23 ~ 08-05 | 문서화 & 운영 안정화 (v1.3~v1.5.9) | Swagger API 문서화, 반응형 UI 보완, README 정리, 배포 후 스케줄러 미세 조정 |
+
+## 개정이력
+
+| 담당 | 주요 커밋 이력 |
+|---|---|
+| 강현욱 | JWT 인증/로그인·회원가입 구현(v0.2~0.3) → 마이페이지·Access Token 자동 갱신(v0.8~0.10) → 1차 배포 인프라 구축(v0.11) → footer·Swagger 문서화·반응형 수정(v1.2~1.5.2) |
+| 김정희 | 종목 스크리닝 목록/랭킹 조회(저PER·저PBR·고ROE·고배당 TOP5, TOP10·TOP100) 및 필터·페이징 구현 → 실시간 시세 반영 → 투자일지 엔티티/서비스/프론트 구현(v0.8.2~0.9) → 마이페이지·메인 타이틀 등 세부 수정(v0.10.1~0.10.3) |
+| 박형규 | 종목 상세페이지(기본정보·최신시세·지표·3개월 시세 추이) 조회 구현 → 뉴스 크롤링 구현(v0.6) → 관심종목 기능 및 상세페이지 UI 개선(v0.8.3~0.9.3) → 상세페이지 실시간 현재가 반영(v0.10.5) |
+| 정승원 | 스케줄러+REST API 초기 구현(v0.1) → 데이터 파이프라인·TOP100 스코어링(v0.4~0.7) → 배당수익률 예외 처리(v1.1) → 스케줄러 시간 조정 및 배포 후 안정화(v1.5.7~1.5.9) |
+
+## 팀원 구성
+
+<div align="center">
+
+<table cellspacing="0" cellpadding="8">
+<tr>
+<th align="center">팀원구성</th>
+<th align="center">담당역할</th>
+</tr>
+<tr>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/155594550?v=4" width="100" height="100"><br>
+<b>강현욱</b><br>
+<a href="https://github.com/kanghyunuk-dev">@kanghyunuk-dev</a>
+</td>
+<td>
+<ul>
+<li>팀장 (기획, 총괄)</li>
+<li>로그인/회원가입, 마이페이지 (Spring Security/JWT 인증 체계 설계)</li>
+<li>전역 예외처리 (GlobalExceptionHandler)</li>
+<li>API 문서화 (Swagger 전체 컨트롤러 적용)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/144120819?v=4" width="100" height="100"><br>
+<b>김정희</b><br>
+<a href="https://github.com/kinetas">@kinetas</a>
+</td>
+<td>
+<ul>
+<li>DB 설계</li>
+<li>투자일지</li>
+<li>MVC 구조의 시스템 아키텍처 설계</li>
+<li>필터링 기반 조회 API 개발</li>
+<li>실시간 시세 연동</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/263509822?v=4" width="100" height="100"><br>
+<b>박형규</b><br>
+<a href="https://github.com/parkhyeonggyu15">@parkhyeonggyu15</a>
+</td>
+<td>
+<ul>
+<li>관심종목</li>
+<li>상세페이지 API 구현 (수익 및 자산 추이, 재무제표 상세)</li>
+<li>금융 뉴스 크롤링</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td align="center">
+<img src="https://avatars.githubusercontent.com/u/127188283?v=4" width="100" height="100"><br>
+<b>정승원</b><br>
+<a href="https://github.com/jsh340866">@jsh340866</a>
+</td>
+<td>
+<ul>
+<li>DB 설계</li>
+<li>외부 API 호출 데이터 수집 파이프라인 설계 및 구현 (DART 재무제표·기업정보, 주가, 지수, 환율)</li>
+<li>투자지표(PER·PBR·ROE·부채비율·모멘텀 등) 계산 및 Piotroski F-Score, TOP100 스코어링 엔진 구현</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td align="center">
+<h1>🤝</h1>
+<b>공통작업</b>
+</td>
+<td>
+<ul>
+<li>인프라 구축/배포 (Docker, Nginx, Jenkins CI/CD)</li>
+</ul>
+</td>
+</tr>
+</table>
+
+</div>
 
 ## 아키텍처 설계도
 
@@ -330,8 +442,15 @@ Asia/Seoul 기준으로 배치가 순차 실행되어 최신 데이터를 반영
 6. 스케줄러 파이프라인 순서 보장 — cron 분 단위 스태거링
 7. 환율 API의 "빈 응답"을 휴일 판별 신호로 재활용
 8. 종목명 필터링 — `endsWith`와 `contains`를 법령 근거에 따라 구분
-9. JWT 무상태성을 일부 포기하고 회원탈퇴 즉시 반영
-10. 투자일지 매수/매도 삭제 시 포지션 상태 재계산
+9. 화면별 개별 표기 로직으로 인한 랭킹 점수 불일치
+10. 전역 ObjectMapper 설정과 투자일지 API 날짜 포맷 충돌
+11. 페이징 범위 밖 항목을 상세 모달에서 조회하지 못하는 문제
+12. 지표 값 null로 인한 NullPointerException
+13. 투자일지 매수/매도 삭제 시 포지션 상태 재계산
+14. Access Token 만료 시 강제 로그아웃되던 문제
+15. 회원탈퇴 후에도 기존 토큰으로 인증되던 문제
+16. authFetch URL 이중 조합으로 인한 관심종목 API 전체 실패
+17. JWT 인증 정보 복원 시 사용자 ID 누락
 
 <details>
 <summary><b>펼쳐서 자세히 보기</b></summary>
@@ -386,13 +505,49 @@ DART API로 전체 상장사 재무제표를 수집하다 보니 신경 쓸 게 
 
 리츠·스팩 종목을 상장사 목록에서 걸러내야 했는데, 단순히 `contains`로만 처리하면 "메리츠", "블리츠" 같은 무관한 종목까지 리츠로 오탐될 수 있다는 걸 알게 됐습니다. 그래서 [DartCompanyCollector.isExcludedStock()](valuepick/src/main/java/com/example/demo/domain/service/DartCompanyCollector.java#L351-355)에서 매칭 방식을 법령 근거에 따라 다르게 나눴습니다 — 부동산투자회사법상 리츠는 상호 **끝**에 "리츠"를 붙이도록 강제돼 있어서 `corpName.endsWith("리츠")`로 처리했고, 스팩(기업인수목적회사)은 자본시장법상 상호 어디에든 "스팩"이 반드시 들어가야 해서 `corpName.contains("스팩")`만으로도 충분하다고 판단했습니다.
 
-### 9. JWT 무상태성을 일부 포기하고 회원탈퇴 즉시 반영
+### 9. 화면별 개별 표기 로직으로 인한 랭킹 점수 불일치
 
-JWT AccessToken은 원래 서버가 상태를 안 가져도(stateless) 검증되는 게 장점인데, 회원탈퇴를 소프트 삭제(`User.deletedAt`)로 처리하다 보니 이 장점이 오히려 문제가 됐습니다. AccessToken 검증만 그대로 두면 탈퇴한 계정이 토큰 만료 전까지 계속 API를 쓸 수 있기 때문입니다. 그래서 [JWTTokenProvider.getAuthentication()](valuepick/src/main/java/com/example/demo/config/auth/jwt/JWTTokenProvider.java#L106-108)에서 토큰을 파싱한 뒤에도 매 요청마다 `userRepository.existsByEmailAndDeletedAtIsNull()`을 다시 조회해서, 탈퇴한 유저면 인증을 무효화하도록 했습니다. JWT의 "DB 조회 없이 검증 가능"이라는 이점을 일부 포기하고 탈퇴 즉시 반영을 택한 트레이드오프입니다. 같은 이유로 로그인 시점(`AuthService`)에도 탈퇴 여부를 다시 확인하게 했고, 탈퇴 처리 시 `RefreshToken`도 즉시 삭제하도록 했습니다. `RefreshToken`을 `User`와 FK 없이 `email` 문자열로만 연결한 것도(`RefreshToken.java`), 탈퇴 시 애플리케이션 로직으로 바로 지우고 30일 뒤 하드 삭제 스케줄러가 FK 제약 없이 정리할 수 있게 하려는 의도였습니다.
+랭킹 점수를 메인 페이지와 랭크 페이지 두 곳에 노출하고 있었는데, 공용 포맷팅 함수 없이 화면마다 표기 로직을 따로 두고 있어서 같은 데이터인데도 두 화면에서 서로 다른 값으로 보였습니다. 환율·코스피 지수도 실제 화면에 띄워보니 단위와 소수점 자릿수가 맞지 않아 가독성이 떨어졌습니다. 그래서 환율·코스피 표기는 천 단위 구분자와 소수점 자릿수를 맞춰 다시 포맷팅했고([data.js](front/js/data.js)), 랭킹 점수는 메인 페이지([data.js](front/js/data.js))와 랭크 페이지([rank.js](front/js/rank.js))의 렌더링 로직을 각각 찾아 동일한 계산·표기 기준으로 맞췄습니다.
 
-### 10. 투자일지 매수/매도 삭제 시 포지션 상태 재계산
+### 10. 전역 ObjectMapper 설정과 투자일지 API 날짜 포맷 충돌
+
+실시간 주가 폴링을 위해 이미 운영 중이던 주가 스케줄러(배치)가 전역 Jackson ObjectMapper 설정을 쓰고 있었습니다. 투자일지를 서버 API로 전환하면서 `InvestmentBuyDto`·`InvestmentJournalDetailDto`·`InvestmentSellDto`의 `LocalDateTime` 필드도 이 전역 설정의 영향을 그대로 받았고, 그 결과 프론트엔드가 기대하는 날짜 형식과 실제 응답 형식이 어긋났습니다. 스케줄러 쪽 전역 설정은 다른 배치 로직도 함께 쓰고 있어서 그대로 바꾸면 영향 범위가 컸기 때문에, 전역 설정 대신 투자일지 DTO의 `LocalDateTime` 필드마다 포맷을 직접 못박는 방향으로 해결했습니다.
+
+```java
+// InvestmentBuyDto / InvestmentJournalDetailDto / InvestmentSellDto
+@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+private LocalDateTime tradeDateTime;
+```
+
+이렇게 DTO 필드 단위로 포맷을 고정하면서, 전역 ObjectMapper 설정을 건드리지 않고도 투자일지 API 응답만 원하는 날짜 형식으로 내려가도록 국소적으로 해결했습니다.
+
+### 11. 페이징 범위 밖 항목을 상세 모달에서 조회하지 못하는 문제
+
+투자일지 목록 화면은 페이징 처리가 되어 있어서 `listData`에는 현재 페이지 분량만 담겨 있었는데, 상세 모달에서 열람 중인 개별 매수/매도 항목이 다른 페이지에 있으면 [findListItem()](front/js/investment-journal.js#L368-378) 함수가 `listData` 안에서만 찾다가 항목을 찾지 못하는 오류가 났습니다. 그래서 `findListItem`이 `listData`에서 못 찾으면 상세 데이터(`positionDetailData`의 `buys`/`sells`)에서 다시 찾도록 fallback을 추가해, 페이징 범위 밖에 있는 항목도 상세 모달에서 정상적으로 조회되게 했습니다.
+
+### 12. 지표 값 null로 인한 NullPointerException
+
+신규 상장 종목처럼 PER/PBR/ROE/배당수익률 같은 지표 값이 아직 집계되지 않아 null인 종목들이 있었는데, [StockIndicatorRepository](valuepick/src/main/java/com/example/demo/domain/repository/StockIndicatorRepository.java)와 [SimpleInfoServiceImpl](valuepick/src/main/java/com/example/demo/domain/service/SimpleInfoServiceImpl.java)이 이 null 값을 방어하지 않고 그대로 연산에 사용하면서 잘못된 순위 표기 오류가 발생했습니다. 그래서 해당 지표를 조회·연산하는 지점마다 null 체크를 추가해 값이 없는 종목은 연산에서 제외하거나 기본값으로 처리하도록 방어 코드를 넣었고, 환율 조회 로직도 [InfoController](valuepick/src/main/java/com/example/demo/domain/controller/InfoController.java)에서 함께 보강했습니다.
+
+### 13. 투자일지 매수/매도 삭제 시 포지션 상태 재계산
 
 매수·매도 기록을 사후에 삭제할 수 있게 열어두다 보니, 포지션의 "보유/완료" 상태와 `firstBuyAt`/`finalSellAt`이 실제 남은 기록과 어긋나는 경우를 처리해야 했습니다. 그래서 [InvestmentJournalService.deleteBuy()](valuepick/src/main/java/com/example/demo/domain/service/InvestmentJournalService.java#L312-352)에는 이미 매도된 수량이 삭제하려는 매수 수량보다 많으면 삭제 자체를 막고, 첫 매수 기록을 지우는 경우 `firstBuyAt`을 다음으로 이른 매수일로 갱신하며, 매수 기록이 아예 없어지면 포지션 자체를 삭제하는 로직을 넣었습니다. [deleteSell()](valuepick/src/main/java/com/example/demo/domain/service/InvestmentJournalService.java#L354-370)에는 매도 삭제 후 보유 수량이 다시 양수가 되고 상태가 `완료`였다면 `reopen()`으로 `보유` 상태로 되돌리면서 `finalSellAt`도 남은 매도 기록 중 가장 최근 것으로 재계산하게 했습니다. 단순 CRUD로 뒀으면 삭제라는 역방향 연산이 상태를 오염시킬 수 있어서, 순번을 되짚어 재계산하는 로직을 따로 만든 겁니다.
+
+### 14. Access Token 만료 시 강제 로그아웃되던 문제
+
+Access Token은 보안을 위해 만료 시간을 짧게 두는 게 일반적인데, 그렇게 두면 서비스를 이용하는 도중 토큰이 만료되어 API 요청이 401로 실패하고 곧바로 로그인 페이지로 튕기는 문제가 생깁니다. 인증 흐름을 점검하면서 이 문제가 실제로 재현되는 걸 확인했습니다. 그래서 프론트의 [authFetch()](front/js/common.js#L83-121) 요청 함수가 401 응답을 받으면 에러 코드가 `ACCESS_TOKEN_EXPIRED`인지 먼저 확인하고, 맞다면 저장해둔 RefreshToken으로 새 AccessToken을 발급받아 원래 요청을 자동으로 재시도하도록 했습니다. RefreshToken마저 없거나 만료된 경우에만 로그인 페이지로 이동합니다. 토큰 만료를 단순 에러로 끝내지 않고 갱신 흐름으로 이어지게 설계한 것으로, Access/Refresh Token을 분리해 두는 이유가 여기에 있습니다.
+
+### 15. 회원탈퇴 후에도 기존 토큰으로 인증되던 문제
+
+회원탈퇴를 소프트 삭제(soft delete)로 구현하면, 이미 발급된 Access Token은 탈퇴 여부와 무관하게 만료 전까지 계속 유효합니다. JWT는 서버가 상태를 갖지 않아도 검증되는 게 장점인데, 이 경우엔 탈퇴한 계정이 토큰이 살아있는 동안 API를 계속 쓸 수 있다는 문제로 이어질 수 있습니다. 그래서 [JWTTokenProvider](valuepick/src/main/java/com/example/demo/config/auth/jwt/JWTTokenProvider.java#L95)와 [PrincipalDetailsService](valuepick/src/main/java/com/example/demo/config/auth/PrincipalDetailsService.java#L26)의 유저 조회 로직을 `existsByEmailAndDeletedAtIsNull` / `findByEmailAndDeletedAtIsNull`로 바꿔서, 토큰을 검증할 때마다 탈퇴 여부를 함께 확인하도록 했습니다. JWT의 "DB 조회 없이 검증 가능"하다는 장점과 "탈퇴를 즉시 반영해야 하는" 요구사항이 충돌한 경우로, 무상태성을 일부 포기하고 매 요청마다 DB를 재확인하는 쪽을 택한 트레이드오프입니다.
+
+### 16. authFetch URL 이중 조합으로 인한 관심종목 API 전체 실패
+
+인증 헤더를 자동으로 첨부하는 공통 유틸 함수 `authFetch`는 내부적으로 API 도메인을 자체적으로 붙이는 구조로 설계되었습니다. 그런데 호출부인 [data.js의 fetchFavorites()/addFavorite()/removeFavorite()](front/js/data.js#L312-321)에서도 동일하게 `${API_BASE}`를 포함한 URL을 넘기고 있어, 도메인이 중복 조합되어 잘못된 URL이 생성되었습니다. 그 결과 관심종목 조회·등록·삭제 API가 모두 실패하는 문제가 발생했습니다. 원인 파악 후 호출부에서는 순수 경로(path)만 전달하도록 수정하여 문제를 해결했습니다.
+
+### 17. JWT 인증 정보 복원 시 사용자 ID 누락
+
+JWT 토큰을 기반으로 사용자 인증 정보를 복원하는 [JWTTokenProvider.getAuthentication()](valuepick/src/main/java/com/example/demo/config/auth/jwt/JWTTokenProvider.java#L95-103) 로직에서 `existsByEmail`을 사용해 해당 이메일의 존재 여부만 boolean으로 확인하고, 실제 사용자 DTO의 `id` 필드는 채우지 않는 구조였습니다. 이로 인해 로그인 자체는 정상적으로 처리되었지만, 관심종목처럼 사용자 ID를 기준으로 동작해야 하는 기능에서 사용자를 특정할 수 없는 문제가 발생했습니다. 이를 `findByEmail`로 변경하여 실제 엔티티를 조회한 뒤, DTO에 `id` 값을 명시적으로 채워 넣도록 수정하여 문제를 해결했습니다.
 
 </details>
 
@@ -417,89 +572,6 @@ docker compose up --build -d
 
 - `fn`(Nginx)만 80/443 포트를 외부에 노출, `bn`(Spring)·`db`(MySQL)는 내부 네트워크에서만 통신
 - HTTPS는 Let's Encrypt 인증서 사용, HTTP 요청은 HTTPS로 리다이렉트
-
-## 팀원 구성
-
-<div align="center">
-
-<table cellspacing="0" cellpadding="8">
-<tr>
-<th align="center">팀원구성</th>
-<th align="center">담당역할</th>
-</tr>
-<tr>
-<td align="center">
-<img src="https://avatars.githubusercontent.com/u/155594550?v=4" width="100" height="100"><br>
-<b>강현욱</b><br>
-<a href="https://github.com/kanghyunuk-dev">@kanghyunuk-dev</a>
-</td>
-<td>
-<ul>
-<li>팀장 (기획, 총괄)</li>
-<li>로그인/회원가입, 마이페이지 (Spring Security/JWT 인증 체계 설계)</li>
-<li>전역 예외처리 (GlobalExceptionHandler)</li>
-<li>API 문서화 (Swagger 전체 컨트롤러 적용)</li>
-</ul>
-</td>
-</tr>
-<tr>
-<td align="center">
-<img src="https://avatars.githubusercontent.com/u/144120819?v=4" width="100" height="100"><br>
-<b>김정희</b><br>
-<a href="https://github.com/kinetas">@kinetas</a>
-</td>
-<td>
-<ul>
-<li>DB 설계</li>
-<li>투자일지</li>
-<li>MVC 구조의 시스템 아키텍처 설계</li>
-<li>필터링 기반 조회 API 개발</li>
-<li>실시간 시세 연동</li>
-</ul>
-</td>
-</tr>
-<tr>
-<td align="center">
-<img src="https://avatars.githubusercontent.com/u/263509822?v=4" width="100" height="100"><br>
-<b>박형규</b><br>
-<a href="https://github.com/parkhyeonggyu15">@parkhyeonggyu15</a>
-</td>
-<td>
-<ul>
-<li>관심종목</li>
-<li>상세페이지 API 구현 (수익 및 자산 추이, 재무제표 상세)</li>
-<li>금융 뉴스 크롤링</li>
-</ul>
-</td>
-</tr>
-<tr>
-<td align="center">
-<img src="https://avatars.githubusercontent.com/u/127188283?v=4" width="100" height="100"><br>
-<b>정승원</b><br>
-<a href="https://github.com/jsh340866">@jsh340866</a>
-</td>
-<td>
-<ul>
-<li>DB 설계</li>
-<li>외부 API 호출 데이터 수집 파이프라인 설계 및 구현 (DART 재무제표·기업정보, 주가, 지수, 환율)</li>
-<li>투자지표(PER·PBR·ROE·부채비율·모멘텀 등) 계산 및 Piotroski F-Score, TOP100 스코어링 엔진 구현</li>
-</ul>
-</td>
-</tr>
-<tr>
-<td align="center">
-<h1>🤝</h1>
-<b>공통작업</b>
-</td>
-<td>
-<ul>
-<li>인프라 구축/배포 (Docker, Nginx, Jenkins CI/CD)</li>
-</ul>
-</td>
-</tr>
-</table>
-
-</div>
 
 ## 1차 배포 범위
 
