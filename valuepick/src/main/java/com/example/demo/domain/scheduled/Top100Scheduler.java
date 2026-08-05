@@ -17,8 +17,8 @@ public class Top100Scheduler {
     private final Top100Service top100Service;
     private final Top100Repository top100Repository;
 
-    // StockPriceScheduler(새벽 1시 20분) 수집 완료 후 새벽 2시에 스코어 재계산
-    @Scheduled(cron = "0 0 2 * * MON-FRI", zone = "Asia/Seoul")
+    // IndicatorScheduler(오후 2시 30분) 지표계산 완료 후 오후 2시 40분에 스코어 재계산
+    @Scheduled(cron = "0 40 14 * * MON-FRI", zone = "Asia/Seoul")
     public void calculateTop100() {
         try {
             log.info("[Top100Scheduler] TOP100 스코어 계산 시작");
