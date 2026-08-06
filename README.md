@@ -20,7 +20,6 @@
 - [실행 방법](#실행-방법)
 - [1차 배포 범위](#1차-배포-범위)
 - [개선사항](#개선사항)
-- [개발 및 협업 느낀점](#개발-및-협업-느낀점)
 
 ## 팀원 구성
 
@@ -107,7 +106,7 @@
 
 ## 개발동기
 
-평소 가치투자에 관심이 있었고, 재무제표 기반 지표로 저평가 우량주를 걸러주는 서비스를 직접 만들어보고 싶다는 생각에서 프로젝트를 시작했습니다.
+가치투자에 관심이 있었고, 재무제표 기반 지표를 한눈에 볼 수 있는 서비스, 그리고 우량주를 필터링해서 볼 수 있는 서비스를 직접 만들어보고 싶다는 생각에서 프로젝트를 시작했습니다.
 
 동시에 팀 프로젝트를 통해 익혀보고 싶은 기술적 목표도 명확했습니다. Spring Security와 JWT로 인증/인가 체계를 직접 설계해보는 것, DART·KRX·환율 등 이질적인 외부 API를 안정적으로 스케줄링해 파이프라인으로 엮어보는 것, 그리고 팀 단위로 도메인을 나눠 협업하며 Docker/Nginx/Jenkins 기반의 실제 배포 환경까지 경험해보는 것이 목표였습니다.
 
@@ -326,7 +325,6 @@ erDiagram
 <b>Cloud (인프라)</b><br/>
 <img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
 <img src="https://img.shields.io/badge/Amazon%20Route%2053-8C4FFF?style=for-the-badge&logo=amazonroute53&logoColor=white">
-<img src="https://img.shields.io/badge/AWS%20Certificate%20Manager-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
 <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white">
 <img src="https://img.shields.io/badge/Let's%20Encrypt-003A70?style=for-the-badge&logo=letsencrypt&logoColor=white">
 
@@ -606,7 +604,6 @@ docker compose up --build -d
 
 ## 1차 배포 범위
 
-**포함**
 - 종목 스크리닝, 투자지표/TOP100 스코어링 엔진, 데이터 자동 수집 파이프라인
 - JWT 인증, 마이페이지, 관심종목, 개인 투자일지
 - Docker 기반 배포, HTTPS, CI/CD(Jenkins)
@@ -618,6 +615,4 @@ docker compose up --build -d
 - 커뮤니티 게시판(투자일지 공유) 및 댓글 기능
 - Redis 도입 (세션/캐시)
 - 소셜 로그인(OAuth2) 연동
-
-## 개발 및 협업 느낀점
 
