@@ -1,18 +1,14 @@
 
-
 # ValuePick
 
 가치투자 지표 기반 종목 스크리닝 서비스. DART 재무제표, 공공데이터포털 주가, KRX 지수, 한국수출입은행 환율을 매일 자동 수집해 PER·PBR·ROE·Piotroski F-Score 등 투자지표를 계산하고, 다팩터 가중 스코어링으로 저평가 우량주 TOP100을 추천합니다. 개인 투자일지(매수/매도 기록, 손익 관리) 기능을 함께 제공합니다.
 
-- 서비스 주소: https://www.valuepick.cloud
-- 배포 상태: 1차 배포 완료
-
 ## 목차
 
+- [팀원 구성](#팀원-구성)
 - [개발동기](#개발동기)
 - [개발일정](#개발일정)
 - [개정이력](#개정이력)
-- [팀원 구성](#팀원-구성)
 - [아키텍처 설계도](#아키텍처-설계도)
 - [ERD](#erd)
 - [기술 스택](#기술-스택)
@@ -24,32 +20,6 @@
 - [실행 방법](#실행-방법)
 - [1차 배포 범위](#1차-배포-범위)
 - [개선사항](#개선사항)
-
-## 개발동기
-
-평소 가치투자에 관심이 있었고, 재무제표 기반 지표로 저평가 우량주를 걸러주는 서비스를 직접 만들어보고 싶다는 생각에서 프로젝트를 시작했습니다.
-
-동시에 팀 프로젝트를 통해 익혀보고 싶은 기술적 목표도 명확했습니다. Spring Security와 JWT로 인증/인가 체계를 직접 설계해보는 것, DART·KRX·환율 등 이질적인 외부 API를 안정적으로 스케줄링해 파이프라인으로 엮어보는 것, 그리고 팀 단위로 도메인을 나눠 협업하며 Docker/Nginx/Jenkins 기반의 실제 배포 환경까지 경험해보는 것이 목표였습니다.
-
-## 개발일정
-
-| 기간 | 단계 | 주요 내용 |
-|---|---|---|
-| 2026-06-22 ~ 06-24 | 초기 세팅 | 프로젝트 구조 설계, DTO/Entity/DB 설정, 종목 조회·랭킹 API 초안, DART/KRX/환율 외부 API 연동 |
-| 2026-06-24 ~ 06-29 | 인증 & 데이터 파이프라인 (v0.1~v0.5) | Spring Security/JWT 인증, 회원가입·로그인, 스케줄러 기반 자동 수집, 투자지표·TOP100 스코어링 엔진 구현 |
-| 2026-06-30 ~ 07-08 | 핵심 기능 확장 (v0.6~v0.10) | 뉴스 크롤링, GlobalExceptionHandler, 마이페이지, 관심종목, 투자일지(매수/매도) 기능 구현 |
-| 2026-07-10 ~ 07-16 | 안정화 & 배포 준비 (v0.10.x~v0.11) | 스케줄러 시간대(KST) 및 순서 조정, CORS/보안 이슈 수정, Docker 기반 배포 구성 |
-| 2026-07-21 ~ 07-22 | 1차 배포 (v0.11~v1.2) | Docker/Nginx/Jenkins CI/CD 인프라 구축, TOP100 코스피 전용화, footer 등 마무리 UI 작업 |
-| 2026-07-23 ~ 08-05 | 문서화 & 운영 안정화 (v1.3~v1.5.9) | Swagger API 문서화, 반응형 UI 보완, README 정리, 배포 후 스케줄러 미세 조정 |
-
-## 개정이력
-
-| 담당 | 주요 커밋 이력 |
-|---|---|
-| 강현욱 | JWT 인증/로그인·회원가입 구현(v0.2–0.3) → 마이페이지·Access Token 자동 갱신(v0.8–0.10) → 1차 배포 인프라 구축(v0.11) → footer·Swagger 문서화·반응형 수정(v1.2–1.5.2) |
-| 김정희 | 종목 스크리닝 목록/랭킹 조회(저PER·저PBR·고ROE·고배당 TOP5, TOP10·TOP100) 및 필터·페이징 구현 → 실시간 시세 반영 → 투자일지 엔티티/서비스/프론트 구현(v0.8.2–0.9) → 마이페이지·메인 타이틀 등 세부 수정(v0.10.1–0.10.3) |
-| 박형규 | 종목 상세페이지(기본정보·최신시세·지표·3개월 시세 추이) 조회 구현 → 뉴스 크롤링 구현(v0.6) → 관심종목 기능 및 상세페이지 UI 개선(v0.8.3–0.9.3) → 상세페이지 실시간 현재가 반영(v0.10.5) |
-| 정승원 | 스케줄러+REST API 초기 구현(v0.1) → 데이터 파이프라인·TOP100 스코어링(v0.4–0.7) → 배당수익률 예외 처리(v1.1) → 스케줄러 시간 조정 및 배포 후 안정화(v1.5.7–1.5.9) |
 
 ## 팀원 구성
 
@@ -133,6 +103,32 @@
 </table>
 
 </div>
+
+## 개발동기
+
+가치투자에 관심이 있었고, 재무제표 기반 지표를 한눈에 볼 수 있는 서비스, 그리고 우량주를 필터링해서 볼 수 있는 서비스를 직접 만들어보고 싶다는 생각에서 프로젝트를 시작했습니다.
+
+동시에 팀 프로젝트를 통해 익혀보고 싶은 기술적 목표도 명확했습니다. Spring Security와 JWT로 인증/인가 체계를 직접 설계해보는 것, DART·KRX·환율 등 이질적인 외부 API를 안정적으로 스케줄링해 파이프라인으로 엮어보는 것, 그리고 팀 단위로 도메인을 나눠 협업하며 Docker/Nginx/Jenkins 기반의 실제 배포 환경까지 경험해보는 것이 목표였습니다.
+
+## 개발일정
+
+| 기간 | 단계 | 주요 내용 |
+|---|---|---|
+| 2026-06-22 ~ 06-24 | 초기 세팅 | 프로젝트 구조 설계, DTO/Entity/DB 설정, 종목 조회·랭킹 API 초안, DART/KRX/환율 외부 API 연동 |
+| 2026-06-24 ~ 06-29 | 인증 & 데이터 파이프라인 (v0.1~v0.5) | Spring Security/JWT 인증, 회원가입·로그인, 스케줄러 기반 자동 수집, 투자지표·TOP100 스코어링 엔진 구현 |
+| 2026-06-30 ~ 07-08 | 핵심 기능 확장 (v0.6~v0.10) | 뉴스 크롤링, GlobalExceptionHandler, 마이페이지, 관심종목, 투자일지(매수/매도) 기능 구현 |
+| 2026-07-10 ~ 07-16 | 안정화 & 배포 준비 (v0.10.x~v0.11) | 스케줄러 시간대(KST) 및 순서 조정, CORS/보안 이슈 수정, Docker 기반 배포 구성 |
+| 2026-07-21 ~ 07-22 | 1차 배포 (v0.11~v1.2) | Docker/Nginx/Jenkins CI/CD 인프라 구축, TOP100 코스피 전용화, footer 등 마무리 UI 작업 |
+| 2026-07-23 ~ 08-05 | 문서화 & 운영 안정화 (v1.3~v1.5.9) | Swagger API 문서화, 반응형 UI 보완, README 정리, 배포 후 스케줄러 미세 조정 |
+
+## 개정이력
+
+| 담당 | 주요 커밋 이력 |
+|---|---|
+| 강현욱 | JWT 인증/로그인·회원가입 구현(v0.2–0.3) → 마이페이지·Access Token 자동 갱신(v0.8–0.10) → 1차 배포 인프라 구축(v0.11) → footer·Swagger 문서화·반응형 수정(v1.2–1.5.2) |
+| 김정희 | 종목 스크리닝 목록/랭킹 조회(저PER·저PBR·고ROE·고배당 TOP5, TOP10·TOP100) 및 필터·페이징 구현 → 실시간 시세 반영 → 투자일지 엔티티/서비스/프론트 구현(v0.8.2–0.9) → 마이페이지·메인 타이틀 등 세부 수정(v0.10.1–0.10.3) |
+| 박형규 | 종목 상세페이지(기본정보·최신시세·지표·3개월 시세 추이) 조회 구현 → 뉴스 크롤링 구현(v0.6) → 관심종목 기능 및 상세페이지 UI 개선(v0.8.3–0.9.3) → 상세페이지 실시간 현재가 반영(v0.10.5) |
+| 정승원 | 스케줄러+REST API 초기 구현(v0.1) → 데이터 파이프라인·TOP100 스코어링(v0.4–0.7) → 배당수익률 예외 처리(v1.1) → 스케줄러 시간 조정 및 배포 후 안정화(v1.5.7–1.5.9) |
 
 ## 아키텍처 설계도
 
@@ -316,15 +312,44 @@ erDiagram
 <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white">
 <br/><br/>
 
-<b>Infra</b><br/>
-<img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
-<img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white">
-<img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
-<img src="https://img.shields.io/badge/Let's%20Encrypt-003A70?style=for-the-badge&logo=letsencrypt&logoColor=white">
+<b>DevOps (배포 · 협업 도구)</b><br/>
 <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white">
+<img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+<img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white">
+<img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/GitHub%20Webhook-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
+<img src="https://img.shields.io/badge/Git%20Flow-F05032?style=for-the-badge&logo=git&logoColor=white">
+<img src="https://img.shields.io/badge/Sourcetree-0052CC?style=for-the-badge&logo=sourcetree&logoColor=white">
+<br/><br/>
+
+<b>Cloud (인프라)</b><br/>
+<img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
+<img src="https://img.shields.io/badge/Amazon%20Route%2053-8C4FFF?style=for-the-badge&logo=amazonroute53&logoColor=white">
+<img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white">
+<img src="https://img.shields.io/badge/Let's%20Encrypt-003A70?style=for-the-badge&logo=letsencrypt&logoColor=white">
 
 </div>
 
+<b>사용 라이브러리</b>
+
+| 구분 | 라이브러리 | 용도 |
+|---|---|---|
+| Backend | jjwt | JWT 토큰 생성·검증 |
+| Backend | jsoup | 네이버 금융 뉴스 크롤링(HTML 파싱) |
+| Backend | springdoc-openapi | Swagger API 문서 자동 생성 |
+| Backend | Lombok | 보일러플레이트 코드 축소 |
+| Frontend | 없음 (Vanilla JS) | 프레임워크·차트 라이브러리 없이 HTML/CSS/JS와 Canvas 2D API로 직접 구현 |
+
+<b>외부 API</b>
+
+| API | 용도 |
+|---|---|
+| 공공데이터포털 | 주가 시세 |
+| 오픈다트(DART) | 기업정보, 재무제표, 배당금 |
+| 한국수출입은행 | 환율 |
+| KRX(한국거래소) | 코스피 지수 |
+| 네이버증권 | 실시간 주가 시세 |
+| 네이버뉴스 | 뉴스 크롤링 |
 
 ## 주요 기능
 
@@ -378,6 +403,10 @@ erDiagram
 | 투자일지 | 관심종목 | 마이페이지 |
 |---|---|---|
 | <img src="docs/img/resposive-journal.PNG" width="200" height="340" alt="responsive-journal" /> | <img src="docs/img/resposive-favaorit.PNG" width="200" height="340" alt="responsive-favorite" /> | <img src="docs/img/resposive-mypage.PNG" width="200" height="340" alt="responsive-mypage" /> |
+
+### 사이트 확인
+- 서비스 주소: https://www.valuepick.cloud
+- 배포 상태: 1차 배포 완료
 
 ## 폴더 구조
 
@@ -575,7 +604,6 @@ docker compose up --build -d
 
 ## 1차 배포 범위
 
-**포함**
 - 종목 스크리닝, 투자지표/TOP100 스코어링 엔진, 데이터 자동 수집 파이프라인
 - JWT 인증, 마이페이지, 관심종목, 개인 투자일지
 - Docker 기반 배포, HTTPS, CI/CD(Jenkins)
